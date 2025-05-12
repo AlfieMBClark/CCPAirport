@@ -11,7 +11,7 @@ public class Assignment {
     private static final int TotalPlanes=6;
     
     public static void main(String[] args) {
-        Airport aiport = new Airport();
+        Airport airport = new Airport();
         
         Thread[] planeThreads = new Thread[TotalPlanes];
         for(int i=0; i<TotalPlanes;i++){

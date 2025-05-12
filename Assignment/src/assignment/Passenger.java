@@ -10,13 +10,13 @@ package assignment;
  */
 public class Passenger {
     private final int id;
-    private final int PlaneId;
+    private final int planeId;
     private final boolean boarding; // true = boarding, false = disembarking
     
-    //Deets
+  
     public Passenger(int id, int planeId, boolean boarding) {
         this.id = id;
-        this.PlaneId = planeId;
+        this.planeId = planeId;
         this.boarding = boarding;
     }
     
@@ -24,11 +24,11 @@ public class Passenger {
     public void run() {
         try {
             if (boarding) {
-                Assignment.log("Passenger-" + id + ": I'm boarding Plane-" + PlaneId + " now.");
-                Thread.sleep(200); // Time to board
+                Assignment.log("Passenger-" + id + ": I'm boarding Plane-" + planeId + " now.");
+                Thread.sleep(200);
             } else {
-                Assignment.log("Passenger-" + id + ": I'm disembarking from Plane-" + PlaneId + " now.");
-                Thread.sleep(200); // Time to disembark
+                Assignment.log("Passenger-" + id + ": I'm disembarking from Plane-" + planeId + " now.");
+                Thread.sleep(200); 
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

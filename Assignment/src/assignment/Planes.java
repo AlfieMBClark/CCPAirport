@@ -5,7 +5,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 public class Planes implements Runnable {
-    private final int id;
+     private final int id;
     private final int capacity;
     private int passengers;
     private final boolean emergency;
@@ -21,8 +21,12 @@ public class Planes implements Runnable {
     
     /**
      * Constructor
+     * @param id Plane ID
+     * @param capacity Maximum passenger capacity
+     * @param airport The airport instance
+     * @param emergency Whether this is an emergency plane
      */
-    public Plane(int id, int capacity, Airport airport, boolean emergency) {
+    public Planes(int id, int capacity, Airport airport, boolean emergency) {
         this.id = id;
         this.capacity = capacity;
         this.airport = airport;
@@ -44,7 +48,7 @@ public class Planes implements Runnable {
                 landingGranted = airport.requestLanding(id, true);
             } else {
                 while (!landingGranted) {
-                    landingGranted = airport.requestLanding(id, false);
+                    landingGranted = airport.requestLanding(id);
                     
                     if (!landingGranted) {
                         // Wait before trying again
@@ -215,5 +219,4 @@ public class Planes implements Runnable {
         // Update airport statistics
         airport.updatePassengerCount(passengers);
     }
-   
 }

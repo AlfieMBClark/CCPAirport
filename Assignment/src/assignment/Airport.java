@@ -37,31 +37,26 @@ public class Airport {
     private int planesServed = 0;
     private int passengersBoarded = 0;
     
-    /**
-     * Constructor - initialize gates and ATC
-     */
+    
     public Airport() {
-        // Initialize gates
+        //Gates
         for (int i = 0; i < NumGates; i++) {
             gates[i] = new Gates(i + 1);
         }
         
-        // Initialize and start ATC
+        // start ATC
         atc = new ATC(this);
         atcThread = new Thread(atc, "ATC-Thread");
         atcThread.start();
     }
     
-    /**
-     * Check if airport can accept a new plane
-     */
+    
+    //Check if airport can accept a new plane
     public boolean canAcceptPlane() {
         return planesOnGround.get() < MaxPlanes;
     }
     
-    /**
-     * Request landing permission
-     */
+    //Req Landing
     public synchronized boolean requestLanding(int planeId, boolean emergency) {
         log("Plane-" + planeId + ": Requesting Landing.");
         
@@ -103,7 +98,7 @@ public class Airport {
         return true;
     }
     
-    // request landing (non-emergency version)
+    // request landing
     public synchronized boolean requestLanding(int planeId) {
         // Check
         if (!Runway.get() && canAcceptPlane()) {
@@ -175,7 +170,7 @@ public class Airport {
      * Release gate
      */
     public synchronized void releaseGate(int gateNumber, int planeId) {
-        gates[gateNumber - 1].release();
+        gates[gateNumber - 1].Depart();
         log("Plane-" + planeId + ": Undocked from Gate-" + gateNumber + ".");
         notifyAll(); // Notify planes waiting for gates
     }

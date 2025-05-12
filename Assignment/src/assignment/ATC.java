@@ -12,10 +12,7 @@ public class ATC implements Runnable{
     private final Airport airport;
     private boolean running = true;
     
-    /**
-     * Constructor
-     * @param airport The airport to control
-     */
+   
     public ATC(Airport airport) {
         this.airport = airport;
     }
@@ -37,9 +34,7 @@ public class ATC implements Runnable{
         Assignment.log("ATC: Air Traffic Control system shutting down.");
     }
     
-    /**
-     * Shutdown the ATC
-     */
+    //Shutdown
     public void shutdown() {
         running = false;
     }
