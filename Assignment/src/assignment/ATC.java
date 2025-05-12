@@ -15,37 +15,37 @@ public class ATC implements Runnable{
     
     @Override
     public void run() {
-        Assignment.Printmsg("ATC: Air Traffic Control system online.");
+        System.out.println("ATC: Air Traffic Control system online.");
         
         // ATC monitoring
         while (running) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
         }
         
-        Assignment.Printmsg("ATC: Air Traffic Control system shutting down.");
+        System.out.println("ATC: Air Traffic Control system shutting down.");
     }
     
     //Req land
     public synchronized boolean requestLanding(int planeId, boolean emergency) {
-        Assignment.Printmsg("Plane-" + planeId + ": Requesting Landing.");
+        System.out.println("Plane-" + planeId + ": Requesting Landing.");
         
         // Check runway and airport capacity
         boolean runwayFree = !airport.isRunwayOccupied();
         boolean airportHasCapacity = airport.canAcceptPlane();
         
         if (emergency) {
-            Assignment.Printmsg("ATC: EMERGENCY for Plane-" + planeId + ". Clearing runway for emergency landing.");
+            System.out.println("ATC: EMERGENCY for Plane-" + planeId + ". Clearing runway for emergency landing.");
             
             // Emergency landing always granted
             if (!runwayFree) {
                 // Clear runway for emergency landing
                 try {
-                    wait(1000); // Wait a bit before forcing clear
+                    wait(100); // Wait a bit before forcing clear
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -55,16 +55,16 @@ public class ATC implements Runnable{
             //  runway occupied
             airport.occupyRunway(planeId);
             airport.incrementPlanesOnGround();
-            Assignment.Printmsg("ATC: EMERGENCY Landing Permission granted for Plane-" + planeId + ".");
+            System.out.println("ATC: EMERGENCY Landing Permission granted for Plane-" + planeId + ".");
             return true;
         }
         
         // Normal landing request
         if (!runwayFree || !airportHasCapacity) {
             if (!airportHasCapacity) {
-                Assignment.Printmsg("ATC: Landing Permission Denied for Plane-" + planeId + ", Airport Full.");
+                System.out.println("ATC: Landing Permission Denied for Plane-" + planeId + ", Airport Full.");
             } else {
-                Assignment.Printmsg("ATC: Landing Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+                System.out.println("ATC: Landing Permission Denied for Plane-" + planeId + ", Runway Occupied.");
             }
             return false;
         }
@@ -72,29 +72,29 @@ public class ATC implements Runnable{
         // Grant landing permission
         airport.occupyRunway(planeId);
         airport.incrementPlanesOnGround();
-        Assignment.Printmsg("ATC: Landing Permission granted for Plane-" + planeId + ".");
+        System.out.println("ATC: Landing Permission granted for Plane-" + planeId + ".");
         return true;
     }
     
     //Notify Land Completed
     public synchronized void completeLanding(int planeId) {
         airport.clearRunway();
-        Assignment.Printmsg("Plane-" + planeId + ": Landed and cleared runway.");
+        System.out.println("Plane-" + planeId + ": Landed and cleared runway.");
         notifyAll(); // Notify waiting planes
     }
     
     //Req Takeoff
     public synchronized boolean requestTakeoff(int planeId) {
-        Assignment.Printmsg("Plane-" + planeId + ": Requesting Takeoff.");
+        System.out.println("Plane-" + planeId + ": Requesting Takeoff.");
         
         // runway availability
         if (!airport.isRunwayOccupied()) {
             // runway occupied for takeoff
             airport.occupyRunway(planeId);
-            Assignment.Printmsg("ATC: Takeoff Permission granted for Plane-" + planeId + ".");
+            System.out.println("ATC: Takeoff Permission granted for Plane-" + planeId + ".");
             return true;
         } else {
-            Assignment.Printmsg("ATC: Takeoff Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+            System.out.println("ATC: Takeoff Permission Denied for Plane-" + planeId + ", Runway Occupied.");
             return false;
         }
     }
@@ -104,7 +104,7 @@ public class ATC implements Runnable{
         airport.clearRunway();
         airport.decrementPlanesOnGround();
         airport.incrementPlanesServed();
-        Assignment.Printmsg("Plane-" + planeId + ": Took off successfully.");
+        System.out.println("Plane-" + planeId + ": Took off successfully.");
         notifyAll(); // Notify waiting planes
     }
     
@@ -114,9 +114,9 @@ public class ATC implements Runnable{
         
         if (gateNum != -1) {
             airport.occupyGate(gateNum, planeId);
-            Assignment.Printmsg("ATC: Gate-" + gateNum + " assigned for Plane-" + planeId + ".");
+            System.out.println("ATC: Gate-" + gateNum + " assigned for Plane-" + planeId + ".");
         } else {
-            Assignment.Printmsg("ATC: No gates available for Plane-" + planeId + ".");
+            System.out.println("ATC: No gates available for Plane-" + planeId + ".");
         }
         
         return gateNum;
@@ -125,7 +125,7 @@ public class ATC implements Runnable{
     //Plane Leaves gate
     public synchronized void releaseGate(int gateNumber, int planeId) {
         airport.releaseGate(gateNumber);
-        Assignment.Printmsg("Plane-" + planeId + ": Undocked from Gate-" + gateNumber + ".");
+        System.out.println("Plane-" + planeId + ": Undocked from Gate-" + gateNumber + ".");
         notifyAll(); // Notify planes waiting for gates
     }
     

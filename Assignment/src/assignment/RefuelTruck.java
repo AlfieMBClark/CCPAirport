@@ -13,24 +13,24 @@ public class RefuelTruck {
     private int servingPlaneId = 0;
     
     public synchronized void requestRefueling(int planeId) throws InterruptedException {
-        Assignment.Printmsg("Plane-" + planeId + ": Requesting refueling service.");
+        System.out.println("Plane-" + planeId + ": Requesting refueling service.");
         
         // Wait available
         while (Refuelling) {
-            Assignment.Printmsg("Plane-" + planeId + ": Waiting for refueling truck.");
+            System.out.println("Plane-" + planeId + ": Waiting for refueling truck.");
             wait();
         }
         
         // Refuel Plane
         Refuelling = true;
         servingPlaneId = planeId;
-        Assignment.Printmsg("RefuelTruck: Started refueling Plane-" + planeId + ".");
+        System.out.println("RefuelTruck: Started refueling Plane-" + planeId + ".");
         Thread.sleep(2000);
         
         // available
         Refuelling = false;
         servingPlaneId = 0;
-        Assignment.Printmsg("RefuelTruck: Completed refueling Plane-" + planeId + ".");
+        System.out.println("RefuelTruck: Completed refueling Plane-" + planeId + ".");
         
         // Notify
         notifyAll();

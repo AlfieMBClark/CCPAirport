@@ -49,9 +49,5 @@ public class Assignment {
         System.out.println("Simulation completed.");
     }
     
-    //log info
-    public static synchronized void Printmsg(String message) {
-        System.out.println(Thread.currentThread().getName() + ": " + message);
-    }
     
 }

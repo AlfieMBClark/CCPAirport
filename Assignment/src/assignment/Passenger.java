@@ -16,12 +16,12 @@ public class Passenger {
     
     //Disembark
     public static void Disembarking(int planeId, int count) {
-        Assignment.Printmsg("Passengers: " + count + " passengers disembarking from Plane-" + planeId);
+        System.out.println("Passengers: " + count + " passengers disembarking from Plane-" + planeId);
     }
     
     //Board
     public static void Boarding(int planeId, int count) {
-        Assignment.Printmsg("Passengers: " + count + " passengers boarding Plane-" + planeId);
+        System.out.println("Passengers: " + count + " passengers boarding Plane-" + planeId);
     }
     
     //time for passenger
