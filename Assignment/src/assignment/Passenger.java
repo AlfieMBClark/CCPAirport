@@ -8,7 +8,7 @@ package assignment;
  *
  * @author alfie
  */
-public class Passenger {
+public class Passenger implements Runnable {
     private final int id;
     private final int planeId;
     private final boolean boarding; // true = boarding, false = disembarking
@@ -24,10 +24,10 @@ public class Passenger {
     public void run() {
         try {
             if (boarding) {
-                Assignment.log("Passenger-" + id + ": I'm boarding Plane-" + planeId + " now.");
+                Assignment.log("Passenger-" + id + ":boarding Plane-" + planeId + " now.");
                 Thread.sleep(200);
             } else {
-                Assignment.log("Passenger-" + id + ": I'm disembarking from Plane-" + planeId + " now.");
+                Assignment.log("Passenger-" + id + ": disembarking from Plane-" + planeId + " now.");
                 Thread.sleep(200); 
             }
         } catch (InterruptedException e) {

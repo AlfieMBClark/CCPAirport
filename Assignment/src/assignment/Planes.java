@@ -61,12 +61,12 @@ public class Planes implements Runnable {
             totalWaitingTime = System.currentTimeMillis() - waitStartTime;
             airport.updateWaitingTime(totalWaitingTime);
             
-            // Land on runway
+            // Land
             Assignment.log("Plane-" + id + ": Landing.");
             Thread.sleep(1000); // Time to land
             airport.completeLanding(id);
             
-            // Request gate assignment
+            // Request gate
             int gateNum = -1;
             while (gateNum == -1) {
                 gateNum = airport.assignGate(id);
@@ -85,23 +85,18 @@ public class Planes implements Runnable {
             // Dock at gate
             Assignment.log("Plane-" + id + ": Docked at Gate-" + assignedGate + ".");
             
-            // Start ground operations concurrently
+            // Start ground operations
             performGroundOperations();
             
-            // Request takeoff
+            // Req takeoff
             boolean takeoffGranted = false;
             while (!takeoffGranted) {
                 takeoffGranted = airport.requestTakeoff(id);
                 
                 if (!takeoffGranted) {
-                    // Wait before trying again
                     Thread.sleep(1000);
                 }
             }
-            
-            // Coast to runway
-            Assignment.log("Plane-" + id + ": Coasting to runway for takeoff.");
-            Thread.sleep(1500); // Time to coast to runway
             
             // Take off
             Assignment.log("Plane-" + id + ": Taking-off.");
@@ -114,9 +109,7 @@ public class Planes implements Runnable {
         }
     }
     
-    /**
-     * Perform ground operations concurrently
-     */
+    //Operations at Gate
     private void performGroundOperations() throws InterruptedException {
         CountDownLatch operationsComplete = new CountDownLatch(3);
         
@@ -169,9 +162,7 @@ public class Planes implements Runnable {
         airport.releaseGate(assignedGate, id);
     }
     
-    /**
-     * Disembark passengers
-     */
+    //Disembark
     private void disembarkPassengers() throws InterruptedException {
         Assignment.log("Plane-" + id + "'s Passengers: Disembarking out of Plane-" + id + ".");
         
@@ -184,27 +175,21 @@ public class Planes implements Runnable {
         passengers = 0;
     }
     
-    /**
-     * Clean and refill supplies
-     */
+    //Clean & Refill
     private void cleanAndRefillSupplies() throws InterruptedException {
         Assignment.log("Plane-" + id + ": Starting cleaning and supplies refill.");
         Thread.sleep(2000);
         Assignment.log("Plane-" + id + ": Cleaning and supplies refill completed.");
     }
     
-    /**
-     * Refuel aircraft
-     */
+    //Refeul
     private void refuelAircraft() throws InterruptedException {
         airport.getRefuelTruck().requestRefueling(id);
     }
     
-    /**
-     * Board new passengers
-     */
+    //Boarding
     private void boardPassengers() throws InterruptedException {
-        // Generate random passenger count
+        //passenger count
         passengers = random.nextInt(capacity + 1);
         
         Assignment.log("Plane-" + id + ": Boarding " + passengers + " new passengers.");
@@ -216,7 +201,7 @@ public class Planes implements Runnable {
         
         Assignment.log("Plane-" + id + ": All " + passengers + " passengers have boarded.");
         
-        // Update airport statistics
+        // airport statistics
         airport.updatePassengerCount(passengers);
     }
 }
