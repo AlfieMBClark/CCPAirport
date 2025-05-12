@@ -5,11 +5,12 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 public class Planes implements Runnable {
-     private final int id;
+    private final int id;
     private final int capacity;
     private int passengers;
     private final boolean emergency;
     private final Airport airport;
+    private final ATC atc;
     private int assignedGate = -1;
     
     // Timing and statistics
@@ -19,18 +20,13 @@ public class Planes implements Runnable {
     // Random generator for passengers
     private final Random random = new Random();
     
-    /**
-     * Constructor
-     * Plane ID
-     * capacity Maximum passenger capacity
-     * airport The airport instance
-     * emergency Whether this is an emergency plane
-     */
+   //Plane deets
      public Planes(int id, int capacity, Airport airport, boolean emergency) {
         this.id = id;
         this.capacity = capacity;
         this.airport = airport;
         this.emergency = emergency;
+        this.atc = airport.getATC(); // Get the ATC reference from airport
         
         // Initial passenger count - using Passenger utility class
         this.passengers = Passenger.generatePassengerCount(capacity);
@@ -39,16 +35,16 @@ public class Planes implements Runnable {
     @Override
     public void run() {
         try {
-            // Request landing
+            // Request landing from ATC
             waitStartTime = System.currentTimeMillis();
             boolean landingGranted = false;
             
             if (emergency) {
-                Assignment.Printmsg("Plane-" + id + ": EMERGENCY! Low fuel, requesting immediate landing!");
-                landingGranted = airport.requestLanding(id, true);
+                Assignment.Printmsg("AK" + id + ": EMERGENCY! Low fuel, requesting immediate landing!");
+                landingGranted = atc.requestLanding(id, true);
             } else {
                 while (!landingGranted) {
-                    landingGranted = airport.requestLanding(id);
+                    landingGranted = atc.requestLanding(id, false);
                     
                     if (!landingGranted) {
                         // Wait before trying again
@@ -64,12 +60,12 @@ public class Planes implements Runnable {
             // Land
             Assignment.Printmsg("Plane-" + id + ": Landing.");
             Thread.sleep(1000); // Time to land
-            airport.completeLanding(id);
+            atc.completeLanding(id);
             
-            // Request gate
+            // Request gate assignment from ATC
             int gateNum = -1;
             while (gateNum == -1) {
-                gateNum = airport.assignGate(id);
+                gateNum = atc.assignGate(id);
                 if (gateNum == -1) {
                     // Wait for a gate to become available
                     Thread.sleep(1000);
@@ -88,10 +84,10 @@ public class Planes implements Runnable {
             // Start ground operations
             performGroundOperations();
             
-            // Req takeoff
+            // Request takeoff from ATC
             boolean takeoffGranted = false;
             while (!takeoffGranted) {
-                takeoffGranted = airport.requestTakeoff(id);
+                takeoffGranted = atc.requestTakeoff(id);
                 
                 if (!takeoffGranted) {
                     Thread.sleep(1000);
@@ -101,7 +97,7 @@ public class Planes implements Runnable {
             // Take off
             Assignment.Printmsg("Plane-" + id + ": Taking-off.");
             Thread.sleep(1000); // Time to take off
-            airport.completeTakeoff(id);
+            atc.completeTakeoff(id);
             
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -158,13 +154,13 @@ public class Planes implements Runnable {
         Assignment.Printmsg("Plane-" + id + ": Undocking from Gate-" + assignedGate + ".");
         Thread.sleep(500); // Time to undock
         
-        // Release the gate
-        airport.releaseGate(assignedGate, id);
+        // Release the gate through ATC
+        atc.releaseGate(assignedGate, id);
     }
     
     //Disembark
     private void disembarkPassengers() throws InterruptedException {
-        // Log  passenger disembarking
+        // Log passenger disembarking
         Passenger.Disembarking(id, passengers);
         
         // Calculate and wait for appropriate disembarking time
@@ -182,7 +178,7 @@ public class Planes implements Runnable {
         Assignment.Printmsg("Plane-" + id + ": Cleaning and supplies refill completed.");
     }
     
-    //Refeul
+    //Refuel
     private void refuelAircraft() throws InterruptedException {
         airport.getRefuelTruck().requestRefueling(id);
     }
