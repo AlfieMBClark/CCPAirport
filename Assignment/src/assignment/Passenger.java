@@ -4,34 +4,29 @@
  */
 package assignment;
 
-/**
- *
- * @author alfie
- */
-public class Passenger implements Runnable {
-    private final int id;
-    private final int planeId;
-    private final boolean boarding; // true = boarding, false = disembarking
+import java.util.Random;
+
+public class Passenger {
+    private static final Random random = new Random();
     
-  
-    public Passenger(int id, int planeId, boolean boarding) {
-        this.id = id;
-        this.planeId = planeId;
-        this.boarding = boarding;
+    //Random passenger num
+    public static int generatePassengerCount(int maxCapacity) {
+        return random.nextInt(maxCapacity) + 1;
     }
     
-    @Override
-    public void run() {
-        try {
-            if (boarding) {
-                Assignment.log("Passenger-" + id + ":boarding Plane-" + planeId + " now.");
-                Thread.sleep(200);
-            } else {
-                Assignment.log("Passenger-" + id + ": disembarking from Plane-" + planeId + " now.");
-                Thread.sleep(200); 
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    //Disembark
+    public static void Disembarking(int planeId, int count) {
+        Assignment.Printmsg("Passengers: " + count + " passengers disembarking from Plane-" + planeId);
+    }
+    
+    //Board
+    public static void Boarding(int planeId, int count) {
+        Assignment.Printmsg("Passengers: " + count + " passengers boarding Plane-" + planeId);
+    }
+    
+    //time for passenger
+    public static int calculateOperationTime(int passengerCount) {
+        // Base time + time per passenger
+        return 500 + (passengerCount * 30);
     }
 }

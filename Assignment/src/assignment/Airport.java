@@ -151,9 +151,7 @@ public class Airport {
         notifyAll(); // Notify waiting planes
     }
     
-    /**
-     * Assign gate to plane
-     */
+    //Asign Plane to gate
     public synchronized int assignGate(int planeId) {
         for (Gates gate : gates) {
             if (!gate.isOccupied()) {
@@ -166,32 +164,24 @@ public class Airport {
         return -1;
     }
     
-    /**
-     * Release gate
-     */
+    //Gate Empty
     public synchronized void releaseGate(int gateNumber, int planeId) {
         gates[gateNumber - 1].Depart();
         log("Plane-" + planeId + ": Undocked from Gate-" + gateNumber + ".");
         notifyAll(); // Notify planes waiting for gates
     }
     
-    /**
-     * Get refueling truck
-     */
+    //Assign Truck
     public RefuelTruck getRefuelTruck() {
         return refuelTruck;
     }
     
-    /**
-     * Update passenger statistics
-     */
+    //Passange stats
     public synchronized void updatePassengerCount(int count) {
         passengersBoarded += count;
     }
     
-    /**
-     * Update waiting time statistics
-     */
+    //Wait Time stats
     public synchronized void updateWaitingTime(long waitTime) {
         totalWaitingTime += waitTime;
         if (waitTime > maxWaitingTime) {
@@ -202,11 +192,8 @@ public class Airport {
         }
     }
     
-    /**
-     * Print statistics at end of simulation
-     */
+    //Print Stats
     public void printStatistics() {
-        // Shutdown ATC first
         atc.shutdown();
         try {
             atcThread.join();
@@ -216,7 +203,7 @@ public class Airport {
         
         System.out.println("\n========== AIRPORT STATISTICS ==========");
         
-        // Check all gates are empty
+        // Check gates are empty
         boolean allGatesEmpty = true;
         for (Gates gate : gates) {
             if (gate.isOccupied()) {
@@ -245,9 +232,7 @@ public class Airport {
         System.out.println("=========================================");
     }
     
-    /**
-     * Utility method for logging with thread information
-     */
+    //Log info
     private void log(String message) {
         System.out.println(Thread.currentThread().getName() + ": " + message);
     }

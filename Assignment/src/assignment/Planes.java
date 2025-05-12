@@ -21,19 +21,19 @@ public class Planes implements Runnable {
     
     /**
      * Constructor
-     * @param id Plane ID
-     * @param capacity Maximum passenger capacity
-     * @param airport The airport instance
-     * @param emergency Whether this is an emergency plane
+     * Plane ID
+     * capacity Maximum passenger capacity
+     * airport The airport instance
+     * emergency Whether this is an emergency plane
      */
-    public Planes(int id, int capacity, Airport airport, boolean emergency) {
+     public Planes(int id, int capacity, Airport airport, boolean emergency) {
         this.id = id;
         this.capacity = capacity;
         this.airport = airport;
         this.emergency = emergency;
         
-        // Initial passenger count
-        this.passengers = random.nextInt(capacity + 1);
+        // Initial passenger count - using Passenger utility class
+        this.passengers = Passenger.generatePassengerCount(capacity);
     }
     
     @Override
@@ -44,7 +44,7 @@ public class Planes implements Runnable {
             boolean landingGranted = false;
             
             if (emergency) {
-                Assignment.log("Plane-" + id + ": EMERGENCY! Low fuel, requesting immediate landing!");
+                Assignment.Printmsg("Plane-" + id + ": EMERGENCY! Low fuel, requesting immediate landing!");
                 landingGranted = airport.requestLanding(id, true);
             } else {
                 while (!landingGranted) {
@@ -62,7 +62,7 @@ public class Planes implements Runnable {
             airport.updateWaitingTime(totalWaitingTime);
             
             // Land
-            Assignment.log("Plane-" + id + ": Landing.");
+            Assignment.Printmsg("Plane-" + id + ": Landing.");
             Thread.sleep(1000); // Time to land
             airport.completeLanding(id);
             
@@ -78,12 +78,12 @@ public class Planes implements Runnable {
             
             assignedGate = gateNum;
             
-            // Coast to gate
-            Assignment.log("Plane-" + id + ": Coasting to Gate-" + assignedGate + ".");
+            //Taxi to gate
+            Assignment.Printmsg("Plane-" + id + ": Taxi to Gate-" + assignedGate + ".");
             Thread.sleep(1500); // Time to coast to gate
             
             // Dock at gate
-            Assignment.log("Plane-" + id + ": Docked at Gate-" + assignedGate + ".");
+            Assignment.Printmsg("Plane-" + id + ": At Gate-" + assignedGate + ".");
             
             // Start ground operations
             performGroundOperations();
@@ -99,13 +99,13 @@ public class Planes implements Runnable {
             }
             
             // Take off
-            Assignment.log("Plane-" + id + ": Taking-off.");
+            Assignment.Printmsg("Plane-" + id + ": Taking-off.");
             Thread.sleep(1000); // Time to take off
             airport.completeTakeoff(id);
             
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            Assignment.log("Plane-" + id + ": Operation interrupted!");
+            Assignment.Printmsg("Plane-" + id + ": Operation interrupted!");
         }
     }
     
@@ -155,7 +155,7 @@ public class Planes implements Runnable {
         boardPassengers();
         
         // Undock from gate
-        Assignment.log("Plane-" + id + ": Undocking from Gate-" + assignedGate + ".");
+        Assignment.Printmsg("Plane-" + id + ": Undocking from Gate-" + assignedGate + ".");
         Thread.sleep(500); // Time to undock
         
         // Release the gate
@@ -164,22 +164,22 @@ public class Planes implements Runnable {
     
     //Disembark
     private void disembarkPassengers() throws InterruptedException {
-        Assignment.log("Plane-" + id + "'s Passengers: Disembarking out of Plane-" + id + ".");
+        // Log  passenger disembarking
+        Passenger.Disembarking(id, passengers);
         
-        // Create passenger threads if wanted for detailed simulation
-        // For simplicity, just sleep proportional to passenger count
-        int disembarkTime = 50 * passengers;
+        // Calculate and wait for appropriate disembarking time
+        int disembarkTime = Passenger.calculateOperationTime(passengers);
         Thread.sleep(disembarkTime);
         
-        Assignment.log("Plane-" + id + ": All " + passengers + " passengers have disembarked.");
+        Assignment.Printmsg("Plane-" + id + ": All " + passengers + " passengers have disembarked.");
         passengers = 0;
     }
     
     //Clean & Refill
     private void cleanAndRefillSupplies() throws InterruptedException {
-        Assignment.log("Plane-" + id + ": Starting cleaning and supplies refill.");
+        Assignment.Printmsg("Plane-" + id + ": Starting cleaning and supplies refill.");
         Thread.sleep(2000);
-        Assignment.log("Plane-" + id + ": Cleaning and supplies refill completed.");
+        Assignment.Printmsg("Plane-" + id + ": Cleaning and supplies refill completed.");
     }
     
     //Refeul
@@ -189,19 +189,19 @@ public class Planes implements Runnable {
     
     //Boarding
     private void boardPassengers() throws InterruptedException {
-        //passenger count
-        passengers = random.nextInt(capacity + 1);
+        // passenger count 
+        passengers = Passenger.generatePassengerCount(capacity);
         
-        Assignment.log("Plane-" + id + ": Boarding " + passengers + " new passengers.");
+        // Log collective passenger boarding
+        Passenger.Boarding(id, passengers);
         
-        // Create passenger threads if wanted for detailed simulation
-        // For simplicity, just sleep proportional to passenger count
-        int boardingTime = 50 * passengers;
+        //boarding time
+        int boardingTime = Passenger.calculateOperationTime(passengers);
         Thread.sleep(boardingTime);
         
-        Assignment.log("Plane-" + id + ": All " + passengers + " passengers have boarded.");
+        Assignment.Printmsg("Plane-" + id + ": All " + passengers + " passengers have boarded.");
         
-        // airport statistics
+        //stats
         airport.updatePassengerCount(passengers);
     }
 }

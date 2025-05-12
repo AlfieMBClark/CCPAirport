@@ -19,9 +19,9 @@ public class ATC implements Runnable{
     
     @Override
     public void run() {
-        Assignment.log("ATC: Air Traffic Control system online.");
+        Assignment.Printmsg("ATC: Air Traffic Control system online.");
         
-        // ATC main loop - monitors airport operations
+        // ATC monitoring
         while (running) {
             try {
                 Thread.sleep(1000);
@@ -31,7 +31,7 @@ public class ATC implements Runnable{
             }
         }
         
-        Assignment.log("ATC: Air Traffic Control system shutting down.");
+        Assignment.Printmsg("ATC: Air Traffic Control system shutting down.");
     }
     
     //Shutdown
