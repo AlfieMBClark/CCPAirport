@@ -8,6 +8,39 @@ package assignment;
  *
  * @author alfie
  */
-public class ATC {
+public class ATC implements Runnable{
+    private final Airport airport;
+    private boolean running = true;
     
+    /**
+     * Constructor
+     * @param airport The airport to control
+     */
+    public ATC(Airport airport) {
+        this.airport = airport;
+    }
+    
+    @Override
+    public void run() {
+        Assignment.log("ATC: Air Traffic Control system online.");
+        
+        // ATC main loop - monitors airport operations
+        while (running) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        
+        Assignment.log("ATC: Air Traffic Control system shutting down.");
+    }
+    
+    /**
+     * Shutdown the ATC
+     */
+    public void shutdown() {
+        running = false;
+    }
 }

@@ -9,53 +9,251 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Airport {
-    private static final int NumGates = 2;
+     private static final int NumGates = 2;
     private static final int MaxPlanes = 3;
     
-    //Runway
-    //False = free -- True = occupied
+    // Runway
+    // False = free -- True = occupied
     public static AtomicBoolean Runway = new AtomicBoolean(false);
     private int runwayOccupiedBy = 0;
     
-    //Gates
+    // Gates
+    private final Gates[] gates = new Gates[NumGates];
     
-     //request landing 
+    // RefuelTruck
+    private final RefuelTruck refuelTruck = new RefuelTruck();
+    
+    // ATC
+    private final ATC atc;
+    private Thread atcThread;
+    
+    // Airport capacity tracking
+    private final AtomicInteger planesOnGround = new AtomicInteger(0);
+    
+    // Statistics
+    private long totalWaitingTime = 0;
+    private long maxWaitingTime = 0;
+    private long minWaitingTime = Long.MAX_VALUE;
+    private int planesServed = 0;
+    private int passengersBoarded = 0;
+    
+    /**
+     * Constructor - initialize gates and ATC
+     */
+    public Airport() {
+        // Initialize gates
+        for (int i = 0; i < NumGates; i++) {
+            gates[i] = new Gates(i + 1);
+        }
+        
+        // Initialize and start ATC
+        atc = new ATC(this);
+        atcThread = new Thread(atc, "ATC-Thread");
+        atcThread.start();
+    }
+    
+    /**
+     * Check if airport can accept a new plane
+     */
+    public boolean canAcceptPlane() {
+        return planesOnGround.get() < MaxPlanes;
+    }
+    
+    /**
+     * Request landing permission
+     */
+    public synchronized boolean requestLanding(int planeId, boolean emergency) {
+        log("Plane-" + planeId + ": Requesting Landing.");
+        
+        if (emergency) {
+            log("ATC: EMERGENCY for Plane-" + planeId + ". Clearing runway for emergency landing.");
+            
+            // Emergency landing always granted
+            if (Runway.get()) {
+                // Wait a bit and then force clear
+                try {
+                    wait(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                Runway.set(false);
+            }
+            
+            Runway.set(true);
+            runwayOccupiedBy = planeId;
+            planesOnGround.incrementAndGet();
+            log("ATC: EMERGENCY Landing Permission granted for Plane-" + planeId + ".");
+            return true;
+        }
+        
+        // Normal landing request
+        if (Runway.get() || !canAcceptPlane()) {
+            if (!canAcceptPlane()) {
+                log("ATC: Landing Permission Denied for Plane-" + planeId + ", Airport Full.");
+            } else {
+                log("ATC: Landing Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+            }
+            return false;
+        }
+        
+        Runway.set(true);
+        runwayOccupiedBy = planeId;
+        planesOnGround.incrementAndGet();
+        log("ATC: Landing Permission granted for Plane-" + planeId + ".");
+        return true;
+    }
+    
+    // request landing (non-emergency version)
     public synchronized boolean requestLanding(int planeId) {
         // Check
-        if (!Runway.get()) {
+        if (!Runway.get() && canAcceptPlane()) {
             // occupied
             Runway.set(true);
-            System.out.println("ATC: Landing Permission granted for Plane-" + planeId + ".");
+            runwayOccupiedBy = planeId;
+            planesOnGround.incrementAndGet();
+            log("ATC: Landing Permission granted for Plane-" + planeId + ".");
             return true;
         } else {
-            System.out.println("ATC: Landing Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+            if (!canAcceptPlane()) {
+                log("ATC: Landing Permission Denied for Plane-" + planeId + ", Airport Full.");
+            } else {
+                log("ATC: Landing Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+            }
             return false;
         }
     }
     
     // release after landing
-    public void completeLanding(int planeId) {
+    public synchronized void completeLanding(int planeId) {
         Runway.set(false);
-        System.out.println("Plane-" + planeId + ": Landed and cleared runway.");
+        runwayOccupiedBy = 0;
+        log("Plane-" + planeId + ": Landed and cleared runway.");
+        notifyAll(); // Notify waiting planes
     }
     
-    //request takeoff
+    // request takeoff
     public synchronized boolean requestTakeoff(int planeId) {
         // Check
         if (!Runway.get()) {
-            //occupied
+            // occupied
             Runway.set(true);
-            System.out.println("ATC: Takeoff Permission granted for Plane-" + planeId + ".");
+            runwayOccupiedBy = planeId;
+            log("ATC: Takeoff Permission granted for Plane-" + planeId + ".");
             return true;
         } else {
-            System.out.println("ATC: Takeoff Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+            log("ATC: Takeoff Permission Denied for Plane-" + planeId + ", Runway Occupied.");
             return false;
         }
     }
     
-    //release after takeoff
-    public void completeTakeoff(int planeId) {
+    // release after takeoff
+    public synchronized void completeTakeoff(int planeId) {
         Runway.set(false);
-        System.out.println("Plane-" + planeId + ": Took off and cleared runway.");
+        runwayOccupiedBy = 0;
+        planesOnGround.decrementAndGet();
+        planesServed++;
+        log("Plane-" + planeId + ": Took off and cleared runway.");
+        notifyAll(); // Notify waiting planes
+    }
+    
+    /**
+     * Assign gate to plane
+     */
+    public synchronized int assignGate(int planeId) {
+        for (Gates gate : gates) {
+            if (!gate.isOccupied()) {
+                gate.occupy(planeId);
+                log("ATC: Gate-" + gate.getGateNumber() + " assigned for Plane-" + planeId + ".");
+                return gate.getGateNumber();
+            }
+        }
+        log("ATC: No gates available for Plane-" + planeId + ".");
+        return -1;
+    }
+    
+    /**
+     * Release gate
+     */
+    public synchronized void releaseGate(int gateNumber, int planeId) {
+        gates[gateNumber - 1].release();
+        log("Plane-" + planeId + ": Undocked from Gate-" + gateNumber + ".");
+        notifyAll(); // Notify planes waiting for gates
+    }
+    
+    /**
+     * Get refueling truck
+     */
+    public RefuelTruck getRefuelTruck() {
+        return refuelTruck;
+    }
+    
+    /**
+     * Update passenger statistics
+     */
+    public synchronized void updatePassengerCount(int count) {
+        passengersBoarded += count;
+    }
+    
+    /**
+     * Update waiting time statistics
+     */
+    public synchronized void updateWaitingTime(long waitTime) {
+        totalWaitingTime += waitTime;
+        if (waitTime > maxWaitingTime) {
+            maxWaitingTime = waitTime;
+        }
+        if (waitTime < minWaitingTime) {
+            minWaitingTime = waitTime;
+        }
+    }
+    
+    /**
+     * Print statistics at end of simulation
+     */
+    public void printStatistics() {
+        // Shutdown ATC first
+        atc.shutdown();
+        try {
+            atcThread.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        System.out.println("\n========== AIRPORT STATISTICS ==========");
+        
+        // Check all gates are empty
+        boolean allGatesEmpty = true;
+        for (Gates gate : gates) {
+            if (gate.isOccupied()) {
+                allGatesEmpty = false;
+                System.out.println("SANITY CHECK FAILED: Gate-" + gate.getGateNumber() + " is still occupied!");
+            }
+        }
+        
+        if (allGatesEmpty) {
+            System.out.println("SANITY CHECK PASSED: All gates are empty.");
+        }
+        
+        // Print waiting time statistics
+        if (planesServed > 0) {
+            System.out.println("\nWaiting Time Statistics:");
+            System.out.println("- Maximum waiting time: " + maxWaitingTime/1000.0 + " seconds");
+            System.out.println("- Average waiting time: " + (totalWaitingTime/planesServed)/1000.0 + " seconds");
+            System.out.println("- Minimum waiting time: " + minWaitingTime/1000.0 + " seconds");
+        }
+        
+        // Print service statistics
+        System.out.println("\nService Statistics:");
+        System.out.println("- Number of planes served: " + planesServed);
+        System.out.println("- Number of passengers boarded: " + passengersBoarded);
+        
+        System.out.println("=========================================");
+    }
+    
+    /**
+     * Utility method for logging with thread information
+     */
+    private void log(String message) {
+        System.out.println(Thread.currentThread().getName() + ": " + message);
     }
 }
