@@ -13,8 +13,10 @@
         </group>
         <group name="CCP">
             <file>file:/C:/Users/alfie/Desktop/CCPAirport/Assignment/src/assignment/Assignment.java</file>
+            <file>file:/C:/Users/alfie/Desktop/CCPAirport/Assignment/src/assignment/Planes.java</file>
             <file>file:/C:/Users/alfie/Desktop/CCPAirport/Assignment/src/assignment/Airport.java</file>
             <file>file:/C:/Users/alfie/Desktop/CCPAirport/Assignment/src/assignment/ATC.java</file>
+            <file>file:/C:/Users/alfie/Desktop/CCPAirport/Assignment/src/assignment/Passenger.java</file>
         </group>
     </open-files>
 </project-private>

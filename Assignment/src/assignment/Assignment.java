@@ -7,33 +7,44 @@ package assignment;
 import java.util.Random;
 
 public class Assignment {
-
-    private static final int TotalPlanes=6;
+     private static final int TOTAL_PLANES = 6;
     
     public static void main(String[] args) {
         Airport airport = new Airport();
         
-        Thread[] planeThreads = new Thread[TotalPlanes];
-        for(int i=0; i<TotalPlanes;i++){
+        // Print welcome message
+        System.out.println("===== Asia Pacific Airport Simulation Started =====");
+        System.out.println("Simulating operations with " + TOTAL_PLANES + " planes");
+        
+        Thread[] planeThreads = new Thread[TOTAL_PLANES];
+        
+        // Create regular planes (1-5)
+        for(int i = 0; i < TOTAL_PLANES - 1; i++) {
             Planes plane = new Planes(i+1, 50, airport, false);
-            planeThreads[i] = new Thread(plane, "Plane: "+ (i+1));
+            planeThreads[i] = new Thread(plane, "Plane-" + (i+1));
             
-            try{
-                Thread.sleep(new Random().nextInt(1000));
-            }catch (InterruptedException e){}
+            try {
+                Thread.sleep(new Random().nextInt(2000));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
             
             planeThreads[i].start();
         }
         
-        
-        //Emergency Plane
-        try{
+        // Wait before introducing emergency plane
+        try {
             Thread.sleep(10000);
-        }catch(InterruptedException e){}
+            System.out.println("\n=== EMERGENCY SCENARIO STARTING ===");
+            System.out.println("Introducing emergency plane with fuel shortage\n");
+        } catch(InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         
-        Planes EPlane = new Planes(TotalPlanes, 50, airport, true);
-        planeThreads[TotalPlanes - 1] = new Thread(EPlane, "Plane-" + TotalPlanes);
-        planeThreads[TotalPlanes - 1].start();
+        // Create and start emergency plane (plane 6)
+        Planes emergencyPlane = new Planes(TOTAL_PLANES, 50, airport, true);
+        planeThreads[TOTAL_PLANES - 1] = new Thread(emergencyPlane, "Plane-" + TOTAL_PLANES);
+        planeThreads[TOTAL_PLANES - 1].start();
         
         // Wait for all planes to complete
         for (Thread planeThread : planeThreads) {
@@ -46,8 +57,6 @@ public class Assignment {
         
         // Print statistics 
         airport.printStatistics();
-        System.out.println("Simulation completed.");
+        System.out.println("\n===== Simulation completed successfully =====");
     }
-    
-    
 }

@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package assignment;
 
 
@@ -15,7 +12,7 @@ public class ATC implements Runnable{
     
     @Override
     public void run() {
-        System.out.println(Thread.currentThread().getName()+": Air Traffic Control system online.");
+        System.out.println(Thread.currentThread().getName() + ": Air Traffic Control system online.");
         
         // ATC monitoring
         while (running) {
@@ -27,109 +24,176 @@ public class ATC implements Runnable{
             }
         }
         
-        System.out.println(Thread.currentThread().getName()+": Air Traffic Control system shutting down.");
+        System.out.println(Thread.currentThread().getName() + ": Air Traffic Control system shutting down.");
     }
     
-    //Req land
+  
     public synchronized boolean requestLanding(int planeId, boolean emergency) {
-        System.out.println("Plane-" + planeId + ": Requesting Landing.");
-        
-        // Check runway and airport capacity
-        boolean runwayFree = !airport.isRunwayOccupied();
-        boolean airportHasCapacity = airport.canAcceptPlane();
-        
-        if (emergency) {
-            System.out.println(Thread.currentThread().getName()+": EMERGENCY for Plane-" + planeId + ". Clearing runway for emergency landing.");
+        // Switch to ATC thread context for printing
+        Thread currentThread = Thread.currentThread();
+        String originalThreadName = currentThread.getName();
+        try {
+            currentThread.setName("ATC");
             
-            // Emergency landing always granted
-            if (!runwayFree) {
-                // Clear runway for emergency landing
-                try {
-                    wait(100); // Wait a bit before forcing clear
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+            // Print that ATC received the request
+            System.out.println(Thread.currentThread().getName() + ": Received landing request from Plane-" + planeId);
+            
+            // Check runway and airport capacity
+            boolean runwayFree = !airport.isRunwayOccupied();
+            boolean airportHasCapacity = airport.canAcceptPlane();
+            
+            if (emergency) {
+                System.out.println(Thread.currentThread().getName() + ": EMERGENCY for Plane-" + planeId + ". Clearing runway for emergency landing.");
+                
+                // Emergency landing always granted
+                if (!runwayFree) {
+                    // Clear runway for emergency landing
+                    try {
+                        wait(100); // Wait a bit before forcing clear
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    airport.clearRunway();
+                    System.out.println(Thread.currentThread().getName() + ": Runway cleared for emergency landing of Plane-" + planeId);
                 }
-                airport.clearRunway();
+                
+                // Mark runway as occupied
+                airport.occupyRunway(planeId);
+                airport.incrementPlanesOnGround();
+                System.out.println(Thread.currentThread().getName() + ": EMERGENCY Landing Permission granted for Plane-" + planeId + ".");
+                return true;
             }
             
-            //  runway occupied
+            // Normal landing request
+            if (!runwayFree || !airportHasCapacity) {
+                if (!airportHasCapacity) {
+                    System.out.println(Thread.currentThread().getName() + ": Landing Permission Denied for Plane-" + planeId + ", Airport Full.");
+                } else {
+                    System.out.println(Thread.currentThread().getName() + ": Landing Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+                }
+                return false;
+            }
+            
+            // Grant landing permission
             airport.occupyRunway(planeId);
             airport.incrementPlanesOnGround();
-            System.out.println(Thread.currentThread().getName()+": EMERGENCY Landing Permission granted for Plane-" + planeId + ".");
+            System.out.println(Thread.currentThread().getName() + ": Landing Permission granted for Plane-" + planeId + ".");
             return true;
+        } finally {
+            // Restore original thread name
+            currentThread.setName(originalThreadName);
         }
-        
-        // Normal landing request
-        if (!runwayFree || !airportHasCapacity) {
-            if (!airportHasCapacity) {
-                System.out.println(Thread.currentThread().getName()+": Landing Permission Denied for Plane-" + planeId + ", Airport Full.");
-            } else {
-                System.out.println(Thread.currentThread().getName()+": Landing Permission Denied for Plane-" + planeId + ", Runway Occupied.");
-            }
-            return false;
-        }
-        
-        // Grant landing permission
-        airport.occupyRunway(planeId);
-        airport.incrementPlanesOnGround();
-        System.out.println(Thread.currentThread().getName()+": Landing Permission granted for Plane-" + planeId + ".");
-        return true;
     }
     
-    //Notify Land Completed
+    /**
+     * Process landing completion notification from a plane
+     * @param planeId ID of the plane
+     */
     public synchronized void completeLanding(int planeId) {
-        airport.clearRunway();
-        System.out.println("Plane-" + planeId + ": Landed and cleared runway.");
-        notifyAll(); // Notify waiting planes
+        // Switch to ATC thread context for printing
+        Thread currentThread = Thread.currentThread();
+        String originalThreadName = currentThread.getName();
+        try {
+            currentThread.setName("ATC");
+            
+            System.out.println(Thread.currentThread().getName() + ": Confirming Plane-" + planeId + " has landed and cleared runway.");
+            airport.clearRunway();
+            notifyAll(); // Notify waiting planes
+        } finally {
+            // Restore original thread name
+            currentThread.setName(originalThreadName);
+        }
     }
     
-    //Req Takeoff
+    /**
+     * Process takeoff request from a plane
+     * @param planeId ID of the requesting plane
+     * @return true if permission granted, false otherwise
+     */
     public synchronized boolean requestTakeoff(int planeId) {
-        System.out.println("Plane-" + planeId + ": Requesting Takeoff.");
-        
-        // runway availability
-        if (!airport.isRunwayOccupied()) {
-            // runway occupied for takeoff
-            airport.occupyRunway(planeId);
-            System.out.println(Thread.currentThread().getName()+": Takeoff Permission granted for Plane-" + planeId + ".");
-            return true;
-        } else {
-            System.out.println(Thread.currentThread().getName()+": Takeoff Permission Denied for Plane-" + planeId + ", Runway Occupied.");
-            return false;
+        // Switch to ATC thread context for printing
+        Thread currentThread = Thread.currentThread();
+        String originalThreadName = currentThread.getName();
+        try {
+            currentThread.setName("ATC");
+            
+            System.out.println(Thread.currentThread().getName() + ": Received takeoff request from Plane-" + planeId);
+            
+            // Check runway availability
+            if (!airport.isRunwayOccupied()) {
+                // Mark runway as occupied for takeoff
+                airport.occupyRunway(planeId);
+                System.out.println(Thread.currentThread().getName() + ": Takeoff Permission granted for Plane-" + planeId + ".");
+                return true;
+            } else {
+                System.out.println(Thread.currentThread().getName() + ": Takeoff Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+                return false;
+            }
+        } finally {
+            // Restore original thread name
+            currentThread.setName(originalThreadName);
         }
     }
     
-   //Plane completed takeoff
     public synchronized void completeTakeoff(int planeId) {
-        airport.clearRunway();
-        airport.decrementPlanesOnGround();
-        airport.incrementPlanesServed();
-        System.out.println("Plane-" + planeId + ": Took off successfully.");
-        notifyAll(); // Notify waiting planes
-    }
-    
-    //Assign Gate
-    public synchronized int assignGate(int planeId) {
-        int gateNum = airport.findAvailableGate();
-        
-        if (gateNum != -1) {
-            airport.occupyGate(gateNum, planeId);
-            System.out.println(Thread.currentThread().getName()+": Gate-" + gateNum + " assigned for Plane-" + planeId + ".");
-        } else {
-            System.out.println(Thread.currentThread().getName()+": No gates available for Plane-" + planeId + ".");
+        // Switch to ATC thread context for printing
+        Thread currentThread = Thread.currentThread();
+        String originalThreadName = currentThread.getName();
+        try {
+            currentThread.setName("ATC");
+            
+            System.out.println(Thread.currentThread().getName() + ": Confirming Plane-" + planeId + " has taken off successfully.");
+            airport.clearRunway();
+            airport.decrementPlanesOnGround();
+            airport.incrementPlanesServed();
+            notifyAll(); // Notify waiting planes
+        } finally {
+            // Restore original thread name
+            currentThread.setName(originalThreadName);
         }
-        
-        return gateNum;
     }
     
-    //Plane Leaves gate
+    public synchronized int assignGate(int planeId) {
+        // Switch to ATC thread context for printing
+        Thread currentThread = Thread.currentThread();
+        String originalThreadName = currentThread.getName();
+        try {
+            currentThread.setName("ATC");
+            
+            System.out.println(Thread.currentThread().getName() + ": Received gate assignment request from Plane-" + planeId);
+            
+            int gateNum = airport.findAvailableGate();
+            
+            if (gateNum != -1) {
+                airport.occupyGate(gateNum, planeId);
+                System.out.println(Thread.currentThread().getName() + ": Gate-" + gateNum + " assigned for Plane-" + planeId + ".");
+            } else {
+                System.out.println(Thread.currentThread().getName() + ": No gates available for Plane-" + planeId + ".");
+            }
+            
+            return gateNum;
+        } finally {
+            currentThread.setName(originalThreadName);
+        }
+    }
+    
     public synchronized void releaseGate(int gateNumber, int planeId) {
-        airport.releaseGate(gateNumber);
-        System.out.println("Plane-" + planeId + ": Undocked from Gate-" + gateNumber + ".");
-        notifyAll(); // Notify planes waiting for gates
+        // Switch to ATC thread context for printing
+        Thread currentThread = Thread.currentThread();
+        String originalThreadName = currentThread.getName();
+        try {
+            currentThread.setName("ATC");
+            
+            System.out.println(Thread.currentThread().getName() + ": Received gate release notification from Plane-" + planeId);
+            airport.releaseGate(gateNumber);
+            System.out.println(Thread.currentThread().getName() + ": Confirming Gate-" + gateNumber + " has been released by Plane-" + planeId + ".");
+            notifyAll(); // Notify planes waiting for gates
+        } finally {
+            // Restore original thread name
+            currentThread.setName(originalThreadName);
+        }
     }
     
-    //ShutDown
     public void shutdown() {
         running = false;
     }

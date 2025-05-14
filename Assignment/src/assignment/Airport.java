@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Airport {
-    private static final int NUM_GATES = 2;
+    private static final int NUM_GATES = 3;
     private static final int MAX_PLANES = 3;
     
     // Runway
@@ -43,13 +43,19 @@ public class Airport {
         for (int i = 0; i < NUM_GATES; i++) {
             gates[i] = new Gates(i + 1);
         }
+        
         // Init ATC
         atc = new ATC(this);
-        atcThread = new Thread(atc, "ATC-Thread");
+        atcThread = new Thread(atc, "ATC");
         atcThread.start();
+        
+        System.out.println("Airport: Gates:" + NUM_GATES + " gates and max capacity of " + MAX_PLANES + " planes");
     }
     
-    
+    /**
+     * Get the ATC instance
+     * @return ATC reference
+     */
     public ATC getATC() {
         return atc;
     }
@@ -68,26 +74,31 @@ public class Airport {
     public void occupyRunway(int planeId) {
         runway.set(true);
         runwayOccupiedBy = planeId;
+        System.out.println("Airport: Runway now occupied by Plane-" + planeId);
     }
     
     //Clear Runway
     public void clearRunway() {
+        int previousOccupant = runwayOccupiedBy;
         runway.set(false);
         runwayOccupiedBy = 0;
     }
     
     //Increment & Decrement Ground
     public void incrementPlanesOnGround() {
-        planesOnGround.incrementAndGet();
+        int newCount = planesOnGround.incrementAndGet();
+        System.out.println("Airport: Planes on ground increased to " + newCount);
     }
     
     public void decrementPlanesOnGround() {
-        planesOnGround.decrementAndGet();
+        int newCount = planesOnGround.decrementAndGet();
+        System.out.println("Airport: Planes on ground decreased to " + newCount);
     }
     
     //Planes finished
     public void incrementPlanesServed() {
         planesServed++;
+        System.out.println("Airport: Total planes served: " + planesServed);
     }
     
     //Avail Gate
@@ -120,7 +131,7 @@ public class Airport {
         passengersBoarded += count;
     }
     
-    //Wiat time stats
+    //Wait time stats
     public synchronized void updateWaitingTime(long waitTime) {
         totalWaitingTime += waitTime;
         if (waitTime > maxWaitingTime) {
@@ -147,12 +158,12 @@ public class Airport {
         for (Gates gate : gates) {
             if (gate.isOccupied()) {
                 allGatesEmpty = false;
-                System.out.println("Gate-" + gate.getGateNumber() + " is still occupied!");
+                System.out.println("SANITY CHECK FAILED: Gate-" + gate.getGateNumber() + " is still occupied!");
             }
         }
         
         if (allGatesEmpty) {
-            System.out.println("All gates are empty.");
+            System.out.println("SANITY CHECK PASSED: All gates are empty.");
         }
         
         // Print waiting time statistics

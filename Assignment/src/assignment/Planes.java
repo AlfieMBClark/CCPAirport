@@ -20,8 +20,8 @@ public class Planes implements Runnable {
     // Random generator for passengers
     private final Random random = new Random();
     
-   //Plane deets
-     public Planes(int id, int capacity, Airport airport, boolean emergency) {
+    // Plane details
+    public Planes(int id, int capacity, Airport airport, boolean emergency) {
         this.id = id;
         this.capacity = capacity;
         this.airport = airport;
@@ -40,15 +40,16 @@ public class Planes implements Runnable {
             boolean landingGranted = false;
             
             if (emergency) {
-                System.out.println("AK" + id + ": EMERGENCY! Low fuel, requesting immediate landing!");
+                System.out.println(Thread.currentThread().getName() + ": Contacting ATC with emergency landing request due to low fuel!");
                 landingGranted = atc.requestLanding(id, true);
             } else {
                 while (!landingGranted) {
+                    System.out.println(Thread.currentThread().getName() + ": Requesting landing permission");
                     landingGranted = atc.requestLanding(id, false);
                     
                     if (!landingGranted) {
                         // Wait before trying again
-                        Thread.sleep(100);
+                        Thread.sleep(1000);
                     }
                 }
             }
@@ -58,28 +59,30 @@ public class Planes implements Runnable {
             airport.updateWaitingTime(totalWaitingTime);
             
             // Land
-            System.out.println("Plane-" + id + ": Landing.");
+            System.out.println(Thread.currentThread().getName() + ": Landing on runway.");
             Thread.sleep(400); // Time to land
+            System.out.println(Thread.currentThread().getName() + ": Landed successfully.");
             atc.completeLanding(id);
             
             // Request gate assignment from ATC
             int gateNum = -1;
             while (gateNum == -1) {
+                System.out.println(Thread.currentThread().getName() + ": Requesting gate assignment.");
                 gateNum = atc.assignGate(id);
                 if (gateNum == -1) {
                     // Wait for a gate to become available
-                    Thread.sleep(200);
+                    Thread.sleep(1000);
                 }
             }
             
             assignedGate = gateNum;
             
-            //Taxi to gate
-            System.out.println("Plane-" + id + ": Taxi to Gate-" + assignedGate + ".");
-            Thread.sleep(100); // Time to coast to gate
+            // Taxi to gate
+            System.out.println(Thread.currentThread().getName() + ": Taxiing to Gate-" + assignedGate + ".");
+            Thread.sleep(1000); // Time to taxi to gate
             
             // Dock at gate
-            System.out.println("Plane-" + id + ": At Gate-" + assignedGate + ".");
+            System.out.println(Thread.currentThread().getName() + ": Arrived at Gate-" + assignedGate + ".");
             
             // Start ground operations
             performGroundOperations();
@@ -87,26 +90,28 @@ public class Planes implements Runnable {
             // Request takeoff from ATC
             boolean takeoffGranted = false;
             while (!takeoffGranted) {
+                System.out.println(Thread.currentThread().getName() + ": Requesting takeoff permission from ATC.");
                 takeoffGranted = atc.requestTakeoff(id);
                 
                 if (!takeoffGranted) {
-                    Thread.sleep(100);
+                    Thread.sleep(1000);
                 }
             }
             
             // Take off
-            System.out.println("Plane-" + id + ": Taking-off.");
-            Thread.sleep(100); // Time to take off
+            System.out.println(Thread.currentThread().getName() + ": Taking off from runway.");
+            Thread.sleep(400); // Time to take off
+            System.out.println(Thread.currentThread().getName() + ": Successfully taken off");
             atc.completeTakeoff(id);
             
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            System.out.println("Plane-" + id + ": Operation interrupted!");
+            System.out.println(Thread.currentThread().getName() + ": Operation interrupted!");
         }
     }
     
-    //Operations at Gate
-     private void performGroundOperations() throws InterruptedException {
+    // Operations at Gate
+    private void performGroundOperations() throws InterruptedException {
         Thread disembarkThread = new Thread(() -> {
             try {
                 disembarkPassengers();
@@ -136,24 +141,28 @@ public class Planes implements Runnable {
         cleaningThread.start();
         refuelingThread.start();
         
-        try{
+        try {
             disembarkThread.join();
             cleaningThread.join();
             refuelingThread.join();
-        }catch(InterruptedException e){}
+        } catch(InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e; // Rethrow to ensure proper handling
+        }
         
-        //  board new passengers
+        // Board new passengers
         boardPassengers();
         
         // Undock from gate
-        System.out.println("Plane-" + id + ": Undocking from Gate-" + assignedGate + ".");
-        Thread.sleep(200); // Time to undock
+        System.out.println(Thread.currentThread().getName() + ": Undocking from Gate-" + assignedGate + ".");
+        Thread.sleep(500); // Time to undock
         
-        // Release the gate through ATC
+        // Notify ATC that gate is being released
+        System.out.println(Thread.currentThread().getName() + ": Notifying ATC that Gate-" + assignedGate + " is being released.");
         atc.releaseGate(assignedGate, id);
     }
     
-    //Disembark
+    // Disembark
     private void disembarkPassengers() throws InterruptedException {
         // Log passenger disembarking
         Passenger.Disembarking(id, passengers);
@@ -162,37 +171,37 @@ public class Planes implements Runnable {
         int disembarkTime = Passenger.calculateOperationTime(passengers);
         Thread.sleep(disembarkTime);
         
-        System.out.println("Plane-" + id + ": All " + passengers + " passengers have disembarked.");
+        System.out.println(Thread.currentThread().getName() + ": All " + passengers + " passengers have disembarked.");
         passengers = 0;
     }
     
-    //Clean & Refill
+    // Clean & Refill
     private void cleanAndRefillSupplies() throws InterruptedException {
-        System.out.println("Plane-" + id + ": Starting cleaning and supplies refill.");
-        Thread.sleep(200);
-        System.out.println("Plane-" + id + ": Cleaning and supplies refill completed.");
+        System.out.println(Thread.currentThread().getName() + ": Starting cleaning and supplies refill.");
+        Thread.sleep(2000);
+        System.out.println(Thread.currentThread().getName() + ": Cleaning and supplies refill completed.");
     }
     
-    //Refuel
+    // Refuel
     private void refuelAircraft() throws InterruptedException {
         airport.getRefuelTruck().requestRefueling(id);
     }
     
-    //Boarding
+    // Boarding
     private void boardPassengers() throws InterruptedException {
-        // passenger count 
+        // Passenger count 
         passengers = Passenger.generatePassengerCount(capacity);
         
         // Log collective passenger boarding
         Passenger.Boarding(id, passengers);
         
-        //boarding time
+        // Boarding time
         int boardingTime = Passenger.calculateOperationTime(passengers);
         Thread.sleep(boardingTime);
         
-        System.out.println("Plane-" + id + ": All " + passengers + " passengers have boarded.");
+        System.out.println(Thread.currentThread().getName() + ": All " + passengers + " passengers have boarded.");
         
-        //stats
+        // Stats
         airport.updatePassengerCount(passengers);
     }
 }
