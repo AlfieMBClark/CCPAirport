@@ -15,7 +15,7 @@ public class ATC implements Runnable{
     
     @Override
     public void run() {
-        System.out.println("ATC: Air Traffic Control system online.");
+        System.out.println(Thread.currentThread().getName()+": Air Traffic Control system online.");
         
         // ATC monitoring
         while (running) {
@@ -27,7 +27,7 @@ public class ATC implements Runnable{
             }
         }
         
-        System.out.println("ATC: Air Traffic Control system shutting down.");
+        System.out.println(Thread.currentThread().getName()+": Air Traffic Control system shutting down.");
     }
     
     //Req land
@@ -39,7 +39,7 @@ public class ATC implements Runnable{
         boolean airportHasCapacity = airport.canAcceptPlane();
         
         if (emergency) {
-            System.out.println("ATC: EMERGENCY for Plane-" + planeId + ". Clearing runway for emergency landing.");
+            System.out.println(Thread.currentThread().getName()+": EMERGENCY for Plane-" + planeId + ". Clearing runway for emergency landing.");
             
             // Emergency landing always granted
             if (!runwayFree) {
@@ -55,16 +55,16 @@ public class ATC implements Runnable{
             //  runway occupied
             airport.occupyRunway(planeId);
             airport.incrementPlanesOnGround();
-            System.out.println("ATC: EMERGENCY Landing Permission granted for Plane-" + planeId + ".");
+            System.out.println(Thread.currentThread().getName()+": EMERGENCY Landing Permission granted for Plane-" + planeId + ".");
             return true;
         }
         
         // Normal landing request
         if (!runwayFree || !airportHasCapacity) {
             if (!airportHasCapacity) {
-                System.out.println("ATC: Landing Permission Denied for Plane-" + planeId + ", Airport Full.");
+                System.out.println(Thread.currentThread().getName()+": Landing Permission Denied for Plane-" + planeId + ", Airport Full.");
             } else {
-                System.out.println("ATC: Landing Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+                System.out.println(Thread.currentThread().getName()+": Landing Permission Denied for Plane-" + planeId + ", Runway Occupied.");
             }
             return false;
         }
@@ -72,7 +72,7 @@ public class ATC implements Runnable{
         // Grant landing permission
         airport.occupyRunway(planeId);
         airport.incrementPlanesOnGround();
-        System.out.println("ATC: Landing Permission granted for Plane-" + planeId + ".");
+        System.out.println(Thread.currentThread().getName()+": Landing Permission granted for Plane-" + planeId + ".");
         return true;
     }
     
@@ -91,10 +91,10 @@ public class ATC implements Runnable{
         if (!airport.isRunwayOccupied()) {
             // runway occupied for takeoff
             airport.occupyRunway(planeId);
-            System.out.println("ATC: Takeoff Permission granted for Plane-" + planeId + ".");
+            System.out.println(Thread.currentThread().getName()+": Takeoff Permission granted for Plane-" + planeId + ".");
             return true;
         } else {
-            System.out.println("ATC: Takeoff Permission Denied for Plane-" + planeId + ", Runway Occupied.");
+            System.out.println(Thread.currentThread().getName()+": Takeoff Permission Denied for Plane-" + planeId + ", Runway Occupied.");
             return false;
         }
     }
@@ -114,9 +114,9 @@ public class ATC implements Runnable{
         
         if (gateNum != -1) {
             airport.occupyGate(gateNum, planeId);
-            System.out.println("ATC: Gate-" + gateNum + " assigned for Plane-" + planeId + ".");
+            System.out.println(Thread.currentThread().getName()+": Gate-" + gateNum + " assigned for Plane-" + planeId + ".");
         } else {
-            System.out.println("ATC: No gates available for Plane-" + planeId + ".");
+            System.out.println(Thread.currentThread().getName()+": No gates available for Plane-" + planeId + ".");
         }
         
         return gateNum;

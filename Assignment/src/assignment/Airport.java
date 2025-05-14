@@ -39,12 +39,11 @@ public class Airport {
     
     
     public Airport() {
-        // Initialize gates
+        // Init gates
         for (int i = 0; i < NUM_GATES; i++) {
             gates[i] = new Gates(i + 1);
         }
-        
-        // Initialize ATC
+        // Init ATC
         atc = new ATC(this);
         atcThread = new Thread(atc, "ATC-Thread");
         atcThread.start();
@@ -148,12 +147,12 @@ public class Airport {
         for (Gates gate : gates) {
             if (gate.isOccupied()) {
                 allGatesEmpty = false;
-                System.out.println("SANITY CHECK FAILED: Gate-" + gate.getGateNumber() + " is still occupied!");
+                System.out.println("Gate-" + gate.getGateNumber() + " is still occupied!");
             }
         }
         
         if (allGatesEmpty) {
-            System.out.println("SANITY CHECK PASSED: All gates are empty.");
+            System.out.println("All gates are empty.");
         }
         
         // Print waiting time statistics
