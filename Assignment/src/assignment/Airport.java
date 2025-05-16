@@ -84,12 +84,12 @@ public class Airport {
     //Increment & Decrement Ground
     public void incrementPlanesOnGround() {
         int newCount = planesOnGround.incrementAndGet();
-        System.out.println("\t Planes on ground " + newCount);
+        //System.out.println("\t Planes on ground " + newCount);
     }
     
     public void decrementPlanesOnGround() {
         int newCount = planesOnGround.decrementAndGet();
-        System.out.println("\t Planes on ground" + newCount);
+        //System.out.println("\t Planes on ground" + newCount);
     }
     
     //Planes finished
