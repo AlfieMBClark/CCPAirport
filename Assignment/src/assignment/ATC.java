@@ -3,7 +3,7 @@ package assignment;
 
 
 public class ATC implements Runnable{
-     private final Airport airport;
+    private final Airport airport;
     private boolean running = true;
     
     public ATC(Airport airport) {
@@ -123,7 +123,7 @@ public class ATC implements Runnable{
         try {
             currentThread.setName("ATC");
             
-            System.out.println(Thread.currentThread().getName() + ": Plane-" + planeId + " cleared runway.");
+            System.out.println(Thread.currentThread().getName() + ": Runway is clear");
             airport.clearRunway();
             notifyAll();
         } finally {
@@ -164,7 +164,7 @@ public class ATC implements Runnable{
         try {
             currentThread.setName("ATC");
             
-            System.out.println(Thread.currentThread().getName() + ": Confirming Plane-" + planeId + " has taken off successfully.");
+            System.out.println(Thread.currentThread().getName() + ": Runway is clear");
             airport.clearRunway();
             airport.decrementPlanesOnGround();
             airport.incrementPlanesServed();
@@ -208,7 +208,7 @@ public class ATC implements Runnable{
             
             System.out.println(Thread.currentThread().getName() + ": Received gate release notification from Plane-" + planeId);
             airport.releaseGate(gateNumber);
-            System.out.println(Thread.currentThread().getName() + ": Confirming Gate-" + gateNumber + " has been released by Plane-" + planeId + ".");
+            System.out.println( Thread.currentThread().getName() + ": Confirming Gate-" + gateNumber + " has been released by Plane-" + planeId + ".");
             notifyAll(); // Notify planes waiting for gates
         } finally {
             // Restore original thread name

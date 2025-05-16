@@ -138,7 +138,6 @@ public class Airport {
             minWaitingTime = waitTime;
         }
     }
-    
     //print stats
     public void printStatistics() {
         atc.shutdown();
@@ -155,12 +154,12 @@ public class Airport {
         for (Gates gate : gates) {
             if (gate.isOccupied()) {
                 allGatesEmpty = false;
-                System.out.println("SANITY CHECK FAILED: Gate-" + gate.getGateNumber() + " is still occupied!");
+                System.out.println(" Gate-" + gate.getGateNumber() + " is still occupied!");
             }
         }
         
         if (allGatesEmpty) {
-            System.out.println("SANITY CHECK PASSED: All gates are empty.");
+            System.out.println("All gates clear.");
         }
         
         // Print waiting time statistics
