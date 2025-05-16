@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package assignment;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,25 +9,25 @@ public class Airport {
     private static final int NUM_GATES = 3;
     private static final int MAX_PLANES = 3;
     
-    // Runway
-    // False = free -- True = occupied
+    //Runway
+    //False = free -- True = occupied
     private AtomicBoolean runway = new AtomicBoolean(false);
     private int runwayOccupiedBy = 0;
     
-    // Gates
+    //Gates
     private final Gates[] gates = new Gates[NUM_GATES];
     
-    // RefuelTruck
+    //RefuelTruck
     private final RefuelTruck refuelTruck = new RefuelTruck();
     
     // ATC
     private final ATC atc;
     private Thread atcThread;
     
-    // Airport capacity tracking
+    //capacity track
     private final AtomicInteger planesOnGround = new AtomicInteger(0);
     
-    // Statistics
+    // Stats
     private long totalWaitingTime = 0;
     private long maxWaitingTime = 0;
     private long minWaitingTime = Long.MAX_VALUE;
@@ -49,7 +46,7 @@ public class Airport {
         atcThread = new Thread(atc, "ATC");
         atcThread.start();
         
-        System.out.println("Airport: Gates:" + NUM_GATES + " gates and max capacity of " + MAX_PLANES + " planes");
+        //System.out.println("Airport: Gates:" + NUM_GATES + "\tNum of planes on ground:"+ MAX_PLANES);
     }
     
     /**
@@ -74,7 +71,7 @@ public class Airport {
     public void occupyRunway(int planeId) {
         runway.set(true);
         runwayOccupiedBy = planeId;
-        System.out.println("Airport: Runway now occupied by Plane-" + planeId);
+        System.out.println(Thread.currentThread().getName()+ ": Runway cleared for Plane " + planeId);
     }
     
     //Clear Runway
@@ -87,18 +84,18 @@ public class Airport {
     //Increment & Decrement Ground
     public void incrementPlanesOnGround() {
         int newCount = planesOnGround.incrementAndGet();
-        System.out.println("Airport: Planes on ground increased to " + newCount);
+        System.out.println("\t Planes on ground " + newCount);
     }
     
     public void decrementPlanesOnGround() {
         int newCount = planesOnGround.decrementAndGet();
-        System.out.println("Airport: Planes on ground decreased to " + newCount);
+        System.out.println("\t Planes on ground" + newCount);
     }
     
     //Planes finished
     public void incrementPlanesServed() {
         planesServed++;
-        System.out.println("Airport: Total planes served: " + planesServed);
+        System.out.println("\tAirport: Total planes served: " + planesServed);
     }
     
     //Avail Gate

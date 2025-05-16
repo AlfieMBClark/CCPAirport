@@ -40,7 +40,7 @@ public class Planes implements Runnable {
             boolean landingGranted = false;
             
             if (emergency) {
-                System.out.println(Thread.currentThread().getName() + ": Contacting ATC with emergency landing request due to low fuel!");
+                System.out.println(Thread.currentThread().getName() + ": EMERGENCY LANDING request due to low fuel!");
                 landingGranted = atc.requestLanding(id, true);
             } else {
                 while (!landingGranted) {
@@ -59,9 +59,9 @@ public class Planes implements Runnable {
             airport.updateWaitingTime(totalWaitingTime);
             
             // Land
-            System.out.println(Thread.currentThread().getName() + ": Landing on runway.");
+            System.out.println(Thread.currentThread().getName() + ": Landed on runway.");
             Thread.sleep(400); // Time to land
-            System.out.println(Thread.currentThread().getName() + ": Landed successfully.");
+            System.out.println(Thread.currentThread().getName() + ": Heading to gate");
             atc.completeLanding(id);
             
             // Request gate assignment from ATC

@@ -29,7 +29,6 @@ public class ATC implements Runnable{
     
   
     public synchronized boolean requestLanding(int planeId, boolean emergency) {
-        // Switch to ATC thread context for printing
         Thread currentThread = Thread.currentThread();
         String originalThreadName = currentThread.getName();
         try {
@@ -75,9 +74,9 @@ public class ATC implements Runnable{
             }
             
             // Grant landing permission
+            System.out.println(Thread.currentThread().getName() + ": Landing Permission granted for Plane-" + planeId + ".");
             airport.occupyRunway(planeId);
             airport.incrementPlanesOnGround();
-            System.out.println(Thread.currentThread().getName() + ": Landing Permission granted for Plane-" + planeId + ".");
             return true;
         } finally {
             // Restore original thread name
@@ -98,7 +97,7 @@ public class ATC implements Runnable{
             
             System.out.println(Thread.currentThread().getName() + ": Confirming Plane-" + planeId + " has landed and cleared runway.");
             airport.clearRunway();
-            notifyAll(); // Notify waiting planes
+            notifyAll();
         } finally {
             // Restore original thread name
             currentThread.setName(originalThreadName);
