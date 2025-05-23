@@ -38,18 +38,14 @@ public class Airport {
             gates[i] = new Gates(i + 1);
         }
         
-        // Init ATC - this should show "ATC: System online" 
         atc = new ATC(this);
         atcThread = new Thread(atc, "ATC");
         atcThread.start();
         
-        System.out.println("\tAirport: Initialized with " + NUM_GATES + " gates, max " + MAX_PLANES + " planes on ground");
+        //System.out.println("\tAirport: Initialized with " + NUM_GATES + " gates, max " + MAX_PLANES + " planes on ground");
     }
     
-    /**
-     * Get the ATC instance
-     * @return ATC reference
-     */
+   
     public ATC getATC() {
         return atc;
     }
@@ -59,16 +55,15 @@ public class Airport {
         return planesOnGround.get() < MAX_PLANES;
     }
     
-    //Check Runway
+   
     public boolean isRunwayOccupied() {
         return runway.get();
     }
     
-    //Assign Runway
+    //Assign 
     public void occupyRunway(int planeId) {
         runway.set(true);
         runwayOccupiedBy = planeId;
-        // Removed confusing print statement - ATC handles runway messages
     }
     
     //Clear Runway
@@ -76,7 +71,6 @@ public class Airport {
         int previousOccupant = runwayOccupiedBy;
         runway.set(false);
         runwayOccupiedBy = 0;
-        // ATC handles runway clear messages
     }
     
     //Increment & Decrement Ground
@@ -93,7 +87,7 @@ public class Airport {
     //Planes finished
     public void incrementPlanesServed() {
         planesServed++;
-        System.out.println("\tAirport: Total planes served: " + planesServed);
+        //System.out.println("\tAirport: Total planes served: " + planesServed);
     }
     
     //Avail Gate
@@ -148,6 +142,7 @@ public class Airport {
         }
         
         System.out.println("\n========== AIRPORT STATISTICS ==========");
+        System.out.println("Planes Served: "+ planesServed);
         
         // Check gates are empty
         boolean allGatesEmpty = true;

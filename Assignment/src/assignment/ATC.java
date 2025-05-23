@@ -4,153 +4,165 @@ public class ATC implements Runnable {
     private final Airport airport;
     private volatile boolean running = true;
     
+    // Simple communication
+    private volatile String request = "";
+    private volatile int planeId = 0;
+    private volatile boolean emergency = false;
+    private volatile int gate = 0;
+    private volatile boolean newRequest = false;
+    private volatile boolean done = false;
+    
+    // Response
+    private volatile boolean granted = false;
+    private volatile int assignedGate = -1;
+    
     public ATC(Airport airport) {
         this.airport = airport;
     }
     
     @Override
     public void run() {
-        System.out.println("\t" + Thread.currentThread().getName() + ": System online.");
+        System.out.println(Thread.currentThread().getName() + ": System online.");
         
-        // ATC monitoring loop
         while (running) {
+            if (newRequest) {
+                handleRequest();
+                newRequest = false;
+                done = true;
+            }
+            
             try {
-                Thread.sleep(1000); // Monitor every second
-                // Could add periodic status reports here if needed
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
         }
         
-        System.out.println("\t" + Thread.currentThread().getName() + ": Shutting down.");
+        System.out.println(Thread.currentThread().getName() + ": Shutting down.");
     }
     
-    public synchronized boolean requestLanding(int planeId, boolean emergency, int[] assignedGateRef) {
-        // Print that ATC received the request - this will show the plane's thread name
-        System.out.println("\t" + Thread.currentThread().getName() + ": Requesting landing permission from ATC");
+    private void handleRequest() {
+        // ATC responds (not acknowledges) - this runs in ATC thread
         
-        // Check runway and airport capacity
-        boolean runwayFree = !airport.isRunwayOccupied();
-        boolean airportHasCapacity = airport.canAcceptPlane();
-        
-        // Check gate availability (for non-emergency landings)
-        int gateNum = -1;
-        if (!emergency) {
-            gateNum = airport.findAvailableGate();
-            if (gateNum == -1) {
-                System.out.println("\t" + Thread.currentThread().getName() + ": Landing Permission Denied - No Available Gates");
-                return false;
-            }
-        }
-        
-        if (emergency) {
-            System.out.println("\t" + Thread.currentThread().getName() + ": EMERGENCY LANDING REQUEST - Clearing runway");
-            
-            // Emergency landing always granted
-            if (!runwayFree) {
-                // Clear runway for emergency landing
-                try {
-                    wait(100); // Wait a bit before forcing clear
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+        if ("reqLand".equals(request)) {
+            if (emergency) {
+                System.out.println(Thread.currentThread().getName() + ": EMERGENCY - Clearing runway for Plane-" + planeId);
+                if (!airport.isRunwayOccupied() && airport.canAcceptPlane()) {
+                    assignedGate = airport.findAvailableGate();
+                    if (assignedGate != -1) {
+                        airport.occupyRunway(planeId);
+                        airport.occupyGate(assignedGate, planeId);
+                        airport.incrementPlanesOnGround();
+                        granted = true;
+                        System.out.println(Thread.currentThread().getName() + ": Landing Permission GRANTED for Emergency Plane-" + planeId);
+                        System.out.println(Thread.currentThread().getName() + ": Emergency Plane-" + planeId + " assigned to Gate-" + assignedGate);
+                    }else {
+                        granted = false;
+                        System.out.println(Thread.currentThread().getName() + ": Landing Permission DENIED for Emergency Plane-" + planeId + " - No gates available");
+                    }
+                }else {
+                    granted = false;
+                    System.out.println(Thread.currentThread().getName() + ": Landing Permission DENIED for Emergency Plane-" + planeId + " - Runway occupied or airport full");
                 }
-                airport.clearRunway();
-                System.out.println("\t" + Thread.currentThread().getName() + ": Runway cleared for emergency landing");
+            }else {
+                // Normal landing
+                if (!airport.isRunwayOccupied() && airport.canAcceptPlane()) {
+                    assignedGate = airport.findAvailableGate();
+                    if (assignedGate != -1) {
+                        airport.occupyRunway(planeId);
+                        airport.occupyGate(assignedGate, planeId);
+                        airport.incrementPlanesOnGround();
+                        granted = true;
+                        System.out.println(Thread.currentThread().getName() + ": Landing Permission GRANTED for Plane-" + planeId);
+                        System.out.println(Thread.currentThread().getName() + ": Plane-" + planeId + " assigned to Gate-" + assignedGate);
+                    }else {
+                        granted = false;
+                        System.out.println(Thread.currentThread().getName() + ": Landing Permission DENIED for Plane-" + planeId + " - No gates available");
+                    }
+                }else {
+                    granted = false;
+                    System.out.println(Thread.currentThread().getName() + ": Landing Permission DENIED for Plane-" + planeId + " - Runway occupied or airport full");
+                }
             }
-            
-            // Mark runway as occupied
-            airport.occupyRunway(planeId);
-            airport.incrementPlanesOnGround();
-            
-            // For emergency, try to find a gate after granting permission
-            gateNum = airport.findAvailableGate();
-            if (gateNum != -1) {
-                airport.occupyGate(gateNum, planeId);
-                System.out.println("\t" + Thread.currentThread().getName() + ": Gate-" + gateNum + " assigned for emergency");
+        }else if ("reqTakeoff".equals(request)) {
+            if (!airport.isRunwayOccupied()) {
+                airport.occupyRunway(planeId);
+                granted = true;
+                System.out.println(Thread.currentThread().getName() + ": Takeoff Permission GRANTED for Plane-" + planeId);
+            }else {
+                granted = false;
+                System.out.println(Thread.currentThread().getName() + ": Takeoff Permission DENIED for Plane-" + planeId + " - Runway occupied");
+            }
+        }else if ("reqGate".equals(request)) {
+            assignedGate = airport.findAvailableGate();
+            if (assignedGate != -1) {
+                airport.occupyGate(assignedGate, planeId);
+                System.out.println(Thread.currentThread().getName() + ": Gate-" + assignedGate + " assigned to Plane-" + planeId);
             } else {
-                System.out.println("\t" + Thread.currentThread().getName() + ": No gates available - Will wait for gate");
+                System.out.println(Thread.currentThread().getName() + ": No gates available for Plane-" + planeId);
             }
-            
-            // Store gate assignment in reference parameter
-            assignedGateRef[0] = gateNum;
-            
-            System.out.println("\t" + Thread.currentThread().getName() + ": EMERGENCY Landing Permission GRANTED");
-            return true;
-        }
+        }else if ("LandComplete".equals(request)) {
+            System.out.println(Thread.currentThread().getName() + ": Runway clear");
+            airport.clearRunway();  
+        }else if ("TakeoffComplete".equals(request)) {
+            System.out.println(Thread.currentThread().getName() + ": Runway clear");
+            airport.clearRunway();
+            airport.decrementPlanesOnGround();
+            airport.incrementPlanesServed();
         
-        // Normal landing request
-        if (!runwayFree || !airportHasCapacity) {
-            if (!airportHasCapacity) {
-                System.out.println("\t" + Thread.currentThread().getName() + ": Landing Permission Denied - Airport Full");
-            } else {
-                System.out.println("\t" + Thread.currentThread().getName() + ": Landing Permission Denied - Runway Occupied");
+        }else if ("gateComplete".equals(request)) {
+            System.out.println(Thread.currentThread().getName() + ": Gate-" + gate + " released");
+            airport.releaseGate(gate);
+        }
+    }
+    
+    //request to ATC thread
+    private void sendToATC(String requestType, int id, boolean isEmergency, int gateNumber) {
+        request = requestType;
+        planeId = id;
+        emergency = isEmergency;
+        gate = gateNumber;
+        done = false;
+        newRequest = true;
+        
+        //DO IT
+        while (!done) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
             }
-            return false;
-        }
-        
-        // Grant landing and assign gate
-        System.out.println("\t" + Thread.currentThread().getName() + ": Landing Permission GRANTED");
-        airport.occupyRunway(planeId);
-        System.out.println("\t" + Thread.currentThread().getName() + ": Assigned to Gate-" + gateNum);
-        airport.occupyGate(gateNum, planeId);
-        airport.incrementPlanesOnGround();
-        
-        // Store gate assignment in reference parameter
-        assignedGateRef[0] = gateNum;
-        
-        return true;
-    }
-    
-    public synchronized void completeLanding(int planeId) {
-        System.out.println("\t" + Thread.currentThread().getName() + ": Landing completed - Runway is now clear");
-        airport.clearRunway();
-        notifyAll(); // Notify waiting planes
-    }
-    
-    public synchronized boolean requestTakeoff(int planeId) {
-        System.out.println("\t" + Thread.currentThread().getName() + ": Requesting takeoff permission from ATC");
-        
-        // Check runway availability
-        if (!airport.isRunwayOccupied()) {
-            // Mark runway as occupied for takeoff
-            airport.occupyRunway(planeId);
-            System.out.println("\t" + Thread.currentThread().getName() + ": Takeoff Permission GRANTED");
-            return true;
-        } else {
-            System.out.println("\t" + Thread.currentThread().getName() + ": Takeoff Permission Denied - Runway Occupied");
-            return false;
         }
     }
     
-    public synchronized void completeTakeoff(int planeId) {
-        System.out.println("\t" + Thread.currentThread().getName() + ": Takeoff completed - Runway is now clear");
-        airport.clearRunway();
-        airport.decrementPlanesOnGround();
-        airport.incrementPlanesServed();
-        notifyAll(); // Notify waiting planes
+    public boolean requestLanding(int id, boolean isEmergency, int[] gateRef) {
+        sendToATC("reqLand", id, isEmergency, 0);
+        gateRef[0] = assignedGate;
+        return granted;
     }
     
-    public synchronized int assignGate(int planeId) {
-        System.out.println("\t" + Thread.currentThread().getName() + ": Requesting gate assignment from ATC");
-        
-        int gateNum = airport.findAvailableGate();
-        
-        if (gateNum != -1) {
-            airport.occupyGate(gateNum, planeId);
-            System.out.println("\t" + Thread.currentThread().getName() + ": Gate-" + gateNum + " assigned");
-        } else {
-            System.out.println("\t" + Thread.currentThread().getName() + ": No gates available");
-        }
-        
-        return gateNum;
+    public void completeLanding(int id) {
+        sendToATC("LandComplete", id, false, 0);
     }
     
-    public synchronized void releaseGate(int gateNumber, int planeId) {
-        System.out.println("\t" + Thread.currentThread().getName() + ": Releasing Gate-" + gateNumber);
-        airport.releaseGate(gateNumber);
-        System.out.println("\t" + Thread.currentThread().getName() + ": Gate-" + gateNumber + " released successfully");
-        notifyAll(); // Notify planes waiting for gates
+    public boolean requestTakeoff(int id) {
+        sendToATC("reqTakeoff", id, false, 0);
+        return granted;
+    }
+    
+    public void completeTakeoff(int id) {
+        sendToATC("TakeoffComplete", id, false, 0);
+    }
+    
+    public int assignGate(int id) {
+        sendToATC("reqGate", id, false, 0);
+        return assignedGate;
+    }
+    
+    public void releaseGate(int gateNumber, int id) {
+        sendToATC("gateComplete", id, false, gateNumber);
     }
     
     public void shutdown() {
