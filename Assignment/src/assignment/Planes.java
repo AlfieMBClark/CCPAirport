@@ -112,33 +112,41 @@ public class Planes implements Runnable {
         }
     }
     
-    // Operations at Gate
+    
     private void performGroundOperations() throws InterruptedException {
+        RefuelTruck refuelTruck = new RefuelTruck(id);
+        Thread refuelingThread = new Thread(refuelTruck, "RefuelTruck-" + id);
+        refuelingThread.start();
+        
+      
         Passenger disembarkingPassengers = new Passenger(id, passengers, false);
         Thread disembarkThread = new Thread(disembarkingPassengers, "DisembarkThread-" + id);
+        // Reset passenger count
+        passengers = 0;
         
         CleanRefill cleaningCrew = new CleanRefill(id);
         Thread cleaningThread = new Thread(cleaningCrew, "CleaningThread-" + id);
         
-        RefuelTruck refuelTruck = new RefuelTruck(id);
-        Thread refuelingThread = new Thread(refuelTruck, "RefuelTruck-" + id);
+        passengers = Passenger.generatePassengerCount(capacity); // Generate new passenger count
+        Passenger boardingPassengers = new Passenger(id, passengers, true);
+        Thread boardingThread = new Thread(boardingPassengers, "BoardingThread-" + id);
         
-        Passenger performBoarding = new Passenger(id, passengers, false);
-        Thread BoardingThread = new Thread(performBoarding, "BoardingThread-"+ id);
-        
-        // Start all threads
         disembarkThread.start();
         cleaningThread.start();
-        BoardingThread.start();
-        refuelingThread.start();
+        boardingThread.start();
         
-        try {
-            disembarkThread.join();
+        
+        try{
+            disembarkThread.join(); 
             cleaningThread.join();
-            BoardingThread.start();
-            refuelingThread.join();
-        } catch(InterruptedException e) {}
+            boardingThread.join();
+        }catch (InterruptedException e){}
         
+        //passenger statistics
+        airport.updatePassengerCount(passengers);
+        
+        // Step 5: Wait for refueling to complete (if not already finished)
+        refuelingThread.join(); // Wait for refueling to complete
         
         //Depart
         System.out.println("\t"+Thread.currentThread().getName() + ": Undocking from Gate-" + assignedGate + ".");
@@ -148,5 +156,4 @@ public class Planes implements Runnable {
         System.out.println("\t"+Thread.currentThread().getName() + ": Notifying ATC that Gate-" + assignedGate + " is being released.");
         atc.releaseGate(assignedGate, id);
     }
-   
 }

@@ -1,4 +1,3 @@
-
 package assignment;
 
 import java.util.Random;
@@ -6,7 +5,7 @@ import java.util.Random;
 public class Passenger implements Runnable {
     private static final Random random = new Random();
     private final int planeId;
-    private int passengerCount;
+    private final int passengerCount;
     private final boolean isBoarding; // true for boarding, false for disembarking
     
     public Passenger(int planeId, int passengerCount, boolean isBoarding) {
@@ -31,12 +30,11 @@ public class Passenger implements Runnable {
     
     private void performBoarding() throws InterruptedException {
         System.out.println("\tPassengers: " + passengerCount + " passengers boarding Plane-" + planeId);
-        
         // Boarding time
         int boardingTime = calculateOperationTime(passengerCount);
         Thread.sleep(boardingTime);
         
-        System.out.println("\t" + Thread.currentThread().getName() + ": All " + passengerCount + " passengers have boarded.");
+        System.out.println("\t" + Thread.currentThread().getName() + ": All " + passengerCount + " passengers have boarded Plane-"+ planeId);
     }
     
     private void performDisembarking() throws InterruptedException {
@@ -45,8 +43,8 @@ public class Passenger implements Runnable {
         // Disembarking time
         int disembarkTime = calculateOperationTime(passengerCount);
         Thread.sleep(disembarkTime);
-        passengerCount=0;
-        System.out.println("\t" + Thread.currentThread().getName() + ": All " + passengerCount + " passengers have disembarked.");
+        
+        System.out.println("\t" + Thread.currentThread().getName() + ": All " + passengerCount + " passengers have disembarked from Plane-"+planeId);
     }
     
     //Random passenger num
@@ -54,19 +52,16 @@ public class Passenger implements Runnable {
         return random.nextInt(maxCapacity) + 1;
     }
     
-    //Disembark
     public static void Disembarking(int planeId, int count) {
         System.out.println("\tPassengers: " + count + " passengers disembarking from Plane-" + planeId);
     }
-    
-    //Board
+   
     public static void Boarding(int planeId, int count) {
         System.out.println("\tPassengers: " + count + " passengers boarding Plane-" + planeId);
     }
     
-    //time for passenger
+    //time
     public static int calculateOperationTime(int passengerCount) {
-        // Base time + time per passenger
         return 500 + (passengerCount * 30);
     }
 }

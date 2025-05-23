@@ -20,7 +20,7 @@ public class Assignment {
         
         // Create regular planes (1-5)
         for(int i = 0; i < TOTAL_PLANES - 1; i++) {
-            Planes plane = new Planes(i+1, 100, airport, false);
+            Planes plane = new Planes(i+1, 50, airport, false);
             planeThreads[i] = new Thread(plane, "Plane " + (i+1));
             
             try {
