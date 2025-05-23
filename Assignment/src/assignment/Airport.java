@@ -12,10 +12,8 @@ public class Airport {
     private AtomicBoolean runway = new AtomicBoolean(false);
     private int runwayOccupiedBy = 0;
     
-    //Gates
-    private final Gates[] gates = new Gates[NUM_GATES];
     
-    //RefuelTruck
+    private final Gates[] gates = new Gates[NUM_GATES];
     private final RefuelTruck refuelTruck = new RefuelTruck();
     
     // ATC
@@ -31,6 +29,7 @@ public class Airport {
     private long minWaitingTime = Long.MAX_VALUE;
     private int planesServed = 0;
     private int passengersBoarded = 0;
+    
     
     public Airport() {
         // Init gates

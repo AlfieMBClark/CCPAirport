@@ -2,7 +2,7 @@ package assignment;
 import java.util.Random;
 
 public class Assignment {
-    private static final int TOTAL_PLANES = 6;
+    public static int TOTAL_PLANES = 6;
     
     public static void main(String[] args) {
         Airport airport = new Airport();
@@ -39,20 +39,17 @@ public class Assignment {
             planeThreads[i].start();
         }
         
-        // Wait for all planes to complete
+        // complete planes
         for (int i = 0; i < TOTAL_PLANES; i++) {
             try {
                 planeThreads[i].join();
                 System.out.println("\t" + planeThreads[i].getName() + " completed operations");
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Main thread interrupted while waiting for planes to complete");
-            }
+            } catch (InterruptedException e) {}
         }
         
         System.out.println("\tAll planes have completed their operations");
         
-        // Print final statistics
+        
         airport.printStatistics();
     }
 }
