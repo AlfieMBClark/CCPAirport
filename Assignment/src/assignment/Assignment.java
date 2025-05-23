@@ -1,57 +1,58 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package assignment;
-
 import java.util.Random;
 
 public class Assignment {
-     private static final int TOTAL_PLANES = 6;
+    private static final int TOTAL_PLANES = 6;
     
     public static void main(String[] args) {
         Airport airport = new Airport();
+        Random random = new Random();
         
-        // Print welcome message
-        System.out.println("\tAsia Pacific Airport Simulation Started   ");
-        System.out.println(TOTAL_PLANES + ": planes");
+      
+        System.out.println("\tAsia Pacific Airport Simulation Started");
+        System.out.println("\tTotal planes: " + TOTAL_PLANES);
         
         Thread[] planeThreads = new Thread[TOTAL_PLANES];
         
-        // Create regular planes (1-5)
-        for(int i = 0; i < TOTAL_PLANES - 1; i++) {
-            Planes plane = new Planes(i+1, 50, airport, false);
-            planeThreads[i] = new Thread(plane, "Plane " + (i+1));
+      
+        for(int i = 0; i < TOTAL_PLANES; i++) {
+            int planeId = i + 1;
+            boolean isEmergency = (planeId == 5);
+            
+            Planes plane = new Planes(planeId, 50, airport, isEmergency);
+            planeThreads[i] = new Thread(plane, "Plane-" + planeId);
+           
+            int spawnPlaneTime;
+            if (planeId >= 3 && planeId <= 5) {
+                spawnPlaneTime = random.nextInt(400, 1000); 
+                if (isEmergency){
+                    System.out.println("EMERGENCY PLANE!!!!");
+                }
+            } else {
+                spawnPlaneTime = random.nextInt(1000, 2000); 
+            }
             
             try {
-                Thread.sleep(new Random().nextInt(2000));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+                Thread.sleep(spawnPlaneTime);
+            } catch (InterruptedException e) {}
             
             planeThreads[i].start();
         }
         
- 
-        try {
-            Thread.sleep(10000);
-            System.out.println("Introducing emergency plane with fuel shortage\n");
-        } catch(InterruptedException e) {}
-        
-        Planes emergencyPlane = new Planes(TOTAL_PLANES, 50, airport, true);
-        planeThreads[TOTAL_PLANES - 1] = new Thread(emergencyPlane, "Plane:" + TOTAL_PLANES);
-        planeThreads[TOTAL_PLANES - 1].start();
-        
-        //Complet plane
-        for (Thread planeThread : planeThreads) {
+        // Wait for all planes to complete
+        for (int i = 0; i < TOTAL_PLANES; i++) {
             try {
-                planeThread.join();
+                planeThreads[i].join();
+                System.out.println("\t" + planeThreads[i].getName() + " completed operations");
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                System.out.println("Main thread interrupted while waiting for planes to complete");
             }
         }
         
-        // Print stats
+        System.out.println("\tAll planes have completed their operations");
+        
+        // Print final statistics
         airport.printStatistics();
     }
 }

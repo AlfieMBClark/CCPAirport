@@ -1,9 +1,7 @@
-
 package assignment;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
 
 public class Airport {
     private static final int NUM_GATES = 3;
@@ -34,19 +32,18 @@ public class Airport {
     private int planesServed = 0;
     private int passengersBoarded = 0;
     
-    
     public Airport() {
         // Init gates
         for (int i = 0; i < NUM_GATES; i++) {
             gates[i] = new Gates(i + 1);
         }
         
-        // Init ATC
+        // Init ATC - this should show "ATC: System online" 
         atc = new ATC(this);
         atcThread = new Thread(atc, "ATC");
         atcThread.start();
         
-        //System.out.println("Airport: Gates:" + NUM_GATES + "\tNum of planes on ground:"+ MAX_PLANES);
+        System.out.println("\tAirport: Initialized with " + NUM_GATES + " gates, max " + MAX_PLANES + " planes on ground");
     }
     
     /**
@@ -71,7 +68,7 @@ public class Airport {
     public void occupyRunway(int planeId) {
         runway.set(true);
         runwayOccupiedBy = planeId;
-        System.out.println(Thread.currentThread().getName()+ ": Runway cleared for Plane " + planeId);
+        // Removed confusing print statement - ATC handles runway messages
     }
     
     //Clear Runway
@@ -79,6 +76,7 @@ public class Airport {
         int previousOccupant = runwayOccupiedBy;
         runway.set(false);
         runwayOccupiedBy = 0;
+        // ATC handles runway clear messages
     }
     
     //Increment & Decrement Ground
@@ -138,8 +136,10 @@ public class Airport {
             minWaitingTime = waitTime;
         }
     }
+    
     //print stats
     public void printStatistics() {
+        System.out.println("\tAirport: Shutting down ATC system...");
         atc.shutdown();
         try {
             atcThread.join();

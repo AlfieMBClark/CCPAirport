@@ -29,7 +29,7 @@ public class Passenger implements Runnable {
     }
     
     private void performBoarding() throws InterruptedException {
-        System.out.println("\tPassengers: " + passengerCount + " passengers boarding Plane-" + planeId);
+        System.out.println("\t" + Thread.currentThread().getName() +":\tPassengers: " + passengerCount + " passengers boarding Plane-" + planeId);
         // Boarding time
         int boardingTime = calculateOperationTime(passengerCount);
         Thread.sleep(boardingTime);
@@ -38,7 +38,7 @@ public class Passenger implements Runnable {
     }
     
     private void performDisembarking() throws InterruptedException {
-        System.out.println("\tPassengers: " + passengerCount + " passengers disembarking from Plane-" + planeId);
+        System.out.println("\t" + Thread.currentThread().getName() +":\tPassengers: " + passengerCount + " passengers disembarking from Plane-" + planeId);
         
         // Disembarking time
         int disembarkTime = calculateOperationTime(passengerCount);
@@ -52,13 +52,6 @@ public class Passenger implements Runnable {
         return random.nextInt(maxCapacity) + 1;
     }
     
-    public static void Disembarking(int planeId, int count) {
-        System.out.println("\tPassengers: " + count + " passengers disembarking from Plane-" + planeId);
-    }
-   
-    public static void Boarding(int planeId, int count) {
-        System.out.println("\tPassengers: " + count + " passengers boarding Plane-" + planeId);
-    }
     
     //time
     public static int calculateOperationTime(int passengerCount) {

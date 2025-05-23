@@ -114,39 +114,59 @@ public class Planes implements Runnable {
     
     
     private void performGroundOperations() throws InterruptedException {
-        RefuelTruck refuelTruck = new RefuelTruck(id);
-        Thread refuelingThread = new Thread(refuelTruck, "RefuelTruck-" + id);
+        
+        Thread refuelingThread = new Thread(() -> {
+            airport.getRefuelTruck().requestRefueling(id);
+        }, "RefuelRequest-" + id);
         refuelingThread.start();
         
-      
+        
         Passenger disembarkingPassengers = new Passenger(id, passengers, false);
-        Thread disembarkThread = new Thread(disembarkingPassengers, "DisembarkThread-" + id);
-        // Reset passenger count
+        Thread PassengerDisembarkThread = new Thread(disembarkingPassengers, "DisembarkThread-" + id);
+        PassengerDisembarkThread.start();
+        
+        try {
+            PassengerDisembarkThread.join(); // Wait for disembarking to complete
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+        
+        // Reset passenger count after disembarking
         passengers = 0;
+        
         
         CleanRefill cleaningCrew = new CleanRefill(id);
         Thread cleaningThread = new Thread(cleaningCrew, "CleaningThread-" + id);
-        
-        passengers = Passenger.generatePassengerCount(capacity); // Generate new passenger count
-        Passenger boardingPassengers = new Passenger(id, passengers, true);
-        Thread boardingThread = new Thread(boardingPassengers, "BoardingThread-" + id);
-        
-        disembarkThread.start();
         cleaningThread.start();
-        boardingThread.start();
         
-        
-        try{
-            disembarkThread.join(); 
+        try {
             cleaningThread.join();
-            boardingThread.join();
-        }catch (InterruptedException e){}
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
         
-        //passenger statistics
+        
+        passengers = Passenger.generatePassengerCount(capacity);
+        Passenger boardingPassengers = new Passenger(id, passengers, true);
+        Thread PassengerBoardingThread = new Thread(boardingPassengers, "BoardingThread-" + id);
+        PassengerBoardingThread.start();
+        
+        try {
+            PassengerBoardingThread.join(); 
+        } catch (InterruptedException e) {}
+        
+        // Update statistics
         airport.updatePassengerCount(passengers);
         
-        // Step 5: Wait for refueling to complete (if not already finished)
-        refuelingThread.join(); // Wait for refueling to complete
+        // Wait for refueling to complete (runs concurrently with passenger operations)
+        try {
+            refuelingThread.join(); // Wait for refueling to complete
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
         
         //Depart
         System.out.println("\t"+Thread.currentThread().getName() + ": Undocking from Gate-" + assignedGate + ".");
