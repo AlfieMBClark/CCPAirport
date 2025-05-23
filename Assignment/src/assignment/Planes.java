@@ -1,4 +1,3 @@
-
 package assignment;
 
 import java.util.Random;
@@ -115,46 +114,31 @@ public class Planes implements Runnable {
     
     // Operations at Gate
     private void performGroundOperations() throws InterruptedException {
-        Thread disembarkThread = new Thread(() -> {
-            try {
-                disembarkPassengers();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }, "DisembarkThread-" + id);
+        Passenger disembarkingPassengers = new Passenger(id, passengers, false);
+        Thread disembarkThread = new Thread(disembarkingPassengers, "DisembarkThread-" + id);
         
-        Thread cleaningThread = new Thread(() -> {
-            try {
-                cleanAndRefillSupplies();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }, "CleaningThread-" + id);
+        CleanRefill cleaningCrew = new CleanRefill(id);
+        Thread cleaningThread = new Thread(cleaningCrew, "CleaningThread-" + id);
         
-        Thread refuelingThread = new Thread(() -> {
-            try {
-                refuelAircraft();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }, "RefuelTruck-" + id);
+        RefuelTruck refuelTruck = new RefuelTruck(id);
+        Thread refuelingThread = new Thread(refuelTruck, "RefuelTruck-" + id);
+        
+        Passenger performBoarding = new Passenger(id, passengers, false);
+        Thread BoardingThread = new Thread(performBoarding, "BoardingThread-"+ id);
         
         // Start all threads
         disembarkThread.start();
         cleaningThread.start();
+        BoardingThread.start();
         refuelingThread.start();
         
         try {
             disembarkThread.join();
             cleaningThread.join();
+            BoardingThread.start();
             refuelingThread.join();
-        } catch(InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw e; // Rethrow to ensure proper handling
-        }
+        } catch(InterruptedException e) {}
         
-        
-        boardPassengers();
         
         //Depart
         System.out.println("\t"+Thread.currentThread().getName() + ": Undocking from Gate-" + assignedGate + ".");
@@ -164,47 +148,5 @@ public class Planes implements Runnable {
         System.out.println("\t"+Thread.currentThread().getName() + ": Notifying ATC that Gate-" + assignedGate + " is being released.");
         atc.releaseGate(assignedGate, id);
     }
-    
-    // Disembark
-    private void disembarkPassengers() throws InterruptedException {
-        // Log
-        System.out.println("\tPassengers: " + passengers + " passengers disembarking from Plane-" + id);
-        
-        // Calculate and wait for appropriate disembarking time
-        int disembarkTime = Passenger.calculateOperationTime(passengers);
-        Thread.sleep(disembarkTime);
-        
-        System.out.println("\t"+Thread.currentThread().getName() + ": All " + passengers + " passengers have disembarked.");
-        passengers = 0;
-    }
-    
-    // Clean & Refill
-    private void cleanAndRefillSupplies() throws InterruptedException {
-        System.out.println("\t"+ Thread.currentThread().getName() + ": Starting cleaning and supplies refill.");
-        Thread.sleep(2000);
-        System.out.println("\t"+Thread.currentThread().getName() + ": Cleaning and supplies refill completed.");
-    }
-    
-    // Refuel
-    private void refuelAircraft() throws InterruptedException {
-        airport.getRefuelTruck().requestRefueling(id);
-    }
-    
-    // Boarding
-    private void boardPassengers() throws InterruptedException {
-        // Passenger count 
-        passengers = Passenger.generatePassengerCount(capacity);
-        
-        // Log collective passenger boarding
-        System.out.println("\tPassengers: " + passengers + " passengers boarding Plane-" + id);
-        
-        // Boarding time
-        int boardingTime = Passenger.calculateOperationTime(passengers);
-        Thread.sleep(boardingTime);
-        
-        System.out.println("\t"+Thread.currentThread().getName() + ": All " + passengers + " passengers have boarded.");
-        
-        // Stats
-        airport.updatePassengerCount(passengers);
-    }
+   
 }
