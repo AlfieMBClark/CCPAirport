@@ -37,7 +37,7 @@ public class Planes implements Runnable {
             waitStartTime = System.currentTimeMillis();
             boolean landingGranted = false;
             int[] gateReference = new int[1]; // store gate assignment
-            
+
             if (emergency) {
                 System.out.println(Thread.currentThread().getName() + ": EMERGENCY LANDING request due to low fuel!");
                 landingGranted = atc.requestLanding(id, true, gateReference);
@@ -46,7 +46,7 @@ public class Planes implements Runnable {
                 while (!landingGranted) {
                     System.out.println(Thread.currentThread().getName() + ": Requesting landing permission");
                     landingGranted = atc.requestLanding(id, false, gateReference);
-                    
+
                     if (landingGranted) {
                         assignedGate = gateReference[0]; // Get assigned gate
                     } else {
@@ -55,63 +55,60 @@ public class Planes implements Runnable {
                     }
                 }
             }
-            
+
             // Record waiting time
             totalWaitingTime = System.currentTimeMillis() - waitStartTime;
             airport.updateWaitingTime(totalWaitingTime);
-            
+
             // Land
             System.out.println(Thread.currentThread().getName() + ": Landed on runway.");
             Thread.sleep(400); 
-            
-            //If now gate assigned
+
+            // Since we're using the new processNextLanding logic, the gate should already be assigned
+            // But let's double-check and get the actual assigned gate from the airport
             if (assignedGate == -1) {
-                System.out.println(Thread.currentThread().getName() + ": Landed without a gate assignment, waiting for gate");
-                while (assignedGate == -1) {
-                    System.out.println(Thread.currentThread().getName() + ": Requesting gate assignment.");
-                    assignedGate = atc.assignGate(id);
-                    if (assignedGate == -1) {
-                        Thread.sleep(1000);
-                    }
+                assignedGate = airport.findAvailableGate(id);
+                if (assignedGate == -1) {
+                    System.out.println("ERROR: " + Thread.currentThread().getName() + " landed but no gate found!");
+                    return;
                 }
             }
-            
+
             atc.completeLanding(id);
-            
-            
+
             // Taxi to gate
             System.out.println(Thread.currentThread().getName() + ": Taxiing to Gate-" + assignedGate + ".");
             Thread.sleep(1000); // Time to taxi to gate
-            
+
             // Dock at gate
             System.out.println(Thread.currentThread().getName() + ": Arrived at Gate-" + assignedGate + ".");
-            
+
             // Start ground operations
             performGroundOperations();
-            
+
             // Request takeoff from ATC
             boolean takeoffGranted = false;
             while (!takeoffGranted) {
                 System.out.println(Thread.currentThread().getName() + ": Requesting takeoff permission from ATC.");
                 takeoffGranted = atc.requestTakeoff(id);
-                
+
                 if (!takeoffGranted) {
                     Thread.sleep(1000);
                 }
             }
-            
+
             // Take off
             System.out.println(Thread.currentThread().getName() + ": Taking off from runway.");
             Thread.sleep(400); // Time to take off
             System.out.println(Thread.currentThread().getName() + ": Successfully taken off");
             atc.completeTakeoff(id);
-            
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println(Thread.currentThread().getName() + ": Operation interrupted!");
         }
     }
-    
+
     
     private void performGroundOperations() throws InterruptedException {
         

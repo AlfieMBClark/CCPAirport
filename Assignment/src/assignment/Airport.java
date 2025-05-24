@@ -90,7 +90,7 @@ public class Airport {
     }
     
     //Avail Gate
-    public int findAvailableGate() {
+    public int findAvailableGate(int planeId) {
         for (Gates gate : gates) {
             if (!gate.isOccupied()) {
                 return gate.getGateNumber();
@@ -104,8 +104,11 @@ public class Airport {
         gates[gateNumber - 1].occupy(planeId);
     }
     
-    //Gate Finished
     public void releaseGate(int gateNumber) {
+        if (gateNumber < 1 || gateNumber > NUM_GATES) {
+            System.out.println("ERROR: Invalid gate number " + gateNumber + " - cannot release gate");
+            return;
+        }
         gates[gateNumber - 1].Depart();
     }
     
