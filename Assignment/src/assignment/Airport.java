@@ -44,11 +44,7 @@ public class Airport {
         //System.out.println("\tAirport: Initialized with " + NUM_GATES + " gates, max " + MAX_PLANES + " planes on ground");
     }
     
-    // Getter for number of gates (needed for semaphore initialization)
-    public int getNumGates() {
-        return NUM_GATES;
-    }
-    
+   
     public ATC getATC() {
         return atc;
     }
