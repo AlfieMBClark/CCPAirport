@@ -111,7 +111,7 @@ public class Planes implements Runnable {
     }
 
     
-    private void performGroundOperations() throws InterruptedException {
+    private void performGroundOperations(){
         
         Thread refuelingThread = new Thread(() -> {
             airport.getRefuelTruck().requestRefueling(id);
@@ -125,10 +125,7 @@ public class Planes implements Runnable {
         
         try {
             PassengerDisembarkThread.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw e;
-        }
+        } catch (InterruptedException e) {}
         
         // Reset passenger count
         passengers = 0;
@@ -140,10 +137,7 @@ public class Planes implements Runnable {
         
         try {
             cleaningThread.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw e;
-        }
+        } catch (InterruptedException e) {}
         
         
         passengers = Passenger.generatePassengerCount(capacity);

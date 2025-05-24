@@ -6,18 +6,18 @@ public class Passenger implements Runnable {
     private static final Random random = new Random();
     private final int planeId;
     private final int passengerCount;
-    private final boolean isBoarding; // true = boarding, false = disembarking
+    private final boolean DisemBoard; // true = boarding, false = disembarking
     
     public Passenger(int planeId, int passengerCount, boolean isBoarding) {
         this.planeId = planeId;
         this.passengerCount = passengerCount;
-        this.isBoarding = isBoarding;
+        this.DisemBoard = isBoarding;
     }
     
     @Override
     public void run() {
         try {
-            if (isBoarding) {
+            if (DisemBoard) {
                 performBoarding();
             } else {
                 performDisembarking();

@@ -2,6 +2,7 @@ package assignment;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Semaphore; // Add this import
 
 public class Airport {
     private static final int NUM_GATES = 3;
@@ -12,9 +13,11 @@ public class Airport {
     private AtomicBoolean runway = new AtomicBoolean(false);
     private int runwayOccupiedBy = 0;
     
-    
     private final Gates[] gates = new Gates[NUM_GATES];
     private final RefuelTruck refuelTruck = new RefuelTruck();
+    
+    // ADD SEMAPHORE FOR GATES
+    private final Semaphore gateSemaphore = new Semaphore(NUM_GATES, true); // Fair semaphore
     
     // ATC
     private final ATC atc;
@@ -30,7 +33,6 @@ public class Airport {
     private int planesServed = 0;
     private int passengersBoarded = 0;
     
-    
     public Airport() {
         // Init gates
         for (int i = 0; i < NUM_GATES; i++) {
@@ -40,11 +42,8 @@ public class Airport {
         atc = new ATC(this);
         atcThread = new Thread(atc, "ATC");
         atcThread.start();
-        
-        //System.out.println("\tAirport: Initialized with " + NUM_GATES + " gates, max " + MAX_PLANES + " planes on ground");
     }
     
-   
     public ATC getATC() {
         return atc;
     }
@@ -54,7 +53,6 @@ public class Airport {
         return planesOnGround.get() < MAX_PLANES;
     }
     
-   
     public boolean isRunwayOccupied() {
         return runway.get();
     }
@@ -73,28 +71,38 @@ public class Airport {
     
     public void incrementPlanesOnGround() {
         int newCount = planesOnGround.incrementAndGet();
-        //System.out.println("\t Planes on ground " + newCount);
     }
     
     public void decrementPlanesOnGround() {
         int newCount = planesOnGround.decrementAndGet();
-        //System.out.println("\t Planes on ground" + newCount);
     }
     
-    //Planes finished
+    //Planes fin
     public void incrementPlanesServed() {
         planesServed++;
-        //System.out.println("\tAirport: Total planes served: " + planesServed);
     }
     
-    //Avail Gate
+
+    public boolean areGatesAvailable() {
+        return gateSemaphore.availablePermits() > 0;
+    }
+    
+  
     public int findAvailableGate(int planeId) {
-        for (Gates gate : gates) {
-            if (!gate.isOccupied()) {
-                return gate.getGateNumber();
+        try {
+            gateSemaphore.acquire(); // Wait available
+            for (Gates gate : gates) {
+                if (!gate.isOccupied()) {
+                    return gate.getGateNumber();
+                }
             }
+            gateSemaphore.release(); // Release if no gate found
+            return -1;
+            
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return -1;
         }
-        return -1;
     }
     
     //Assign Gate
@@ -108,6 +116,7 @@ public class Airport {
             return;
         }
         gates[gateNumber - 1].Depart();
+        gateSemaphore.release(); // Rel
     }
     
     public int findGateForPlane(int planeId) {
@@ -139,7 +148,8 @@ public class Airport {
         }
     }
     
-    //print stats
+    
+    
     public void printStatistics() {
         System.out.println("\tAirport: Shutting down ATC system...");
         atc.shutdown();
