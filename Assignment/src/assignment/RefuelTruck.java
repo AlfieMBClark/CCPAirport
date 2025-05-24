@@ -116,7 +116,4 @@ public class RefuelTruck implements Runnable {
     public synchronized int getServingPlaneId() {
         return servingPlaneId;
     }
-    
-    
-  
  }

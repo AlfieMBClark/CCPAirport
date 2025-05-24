@@ -36,30 +36,32 @@ public class Planes implements Runnable {
             // Request landing from ATC
             waitStartTime = System.currentTimeMillis();
             boolean landingGranted = false;
-            int[] gateReference = new int[1]; // store gate assignment
-            
             
             if (emergency) {
                 System.out.println(Thread.currentThread().getName() + ": EMERGENCY LANDING request due to low fuel!");
-                while (!landingGranted) {
-                    landingGranted = atc.requestLanding(id, true, gateReference);
-                    if (landingGranted) {
-                        assignedGate = gateReference[0];
-                    } else {
-                        Thread.sleep(1000);
-                    }
-                }
             } else {
-                while (!landingGranted) {
-                    System.out.println(Thread.currentThread().getName() + ": Requesting landing permission");
-                    landingGranted = atc.requestLanding(id, false, gateReference);
-
-                    if (landingGranted) {
-                        assignedGate = gateReference[0];
-                    } else {
-                        Thread.sleep(1000);
-                    }
+                System.out.println(Thread.currentThread().getName() + ": Requesting landing permission");
+            }
+            
+            // Request to join landing queue
+            while (!landingGranted) {
+                landingGranted = atc.requestLanding(id, emergency);
+                if (!landingGranted) {
+                    Thread.sleep(1000);
                 }
+            }
+            
+            // Now wait for actual landing clearance (when runway + gate available)
+            System.out.println(Thread.currentThread().getName() + ": Added to landing queue, waiting for clearance...");
+            while (!atc.hasLandingPermission(id)) {
+                Thread.sleep(500); // Wait for landing clearance
+            }
+            
+            // Get assigned gate
+            assignedGate = atc.getAssignedGateForPlane(id);
+            if (assignedGate == -1) {
+                System.out.println(Thread.currentThread().getName() + ": ERROR - No gate assigned for landing!");
+                return;
             }
             
             //waiting time
@@ -67,30 +69,23 @@ public class Planes implements Runnable {
             airport.updateWaitingTime(totalWaitingTime);
             
             //Land
-            System.out.println(Thread.currentThread().getName() + ": Landed on runway.");
-            Thread.sleep(400); 
-            
-            //If now gate assigned
-            if (assignedGate == -1) {
-                System.out.println(Thread.currentThread().getName() + ": Landed without a gate assignment, waiting for gate");
-                while (assignedGate == -1) {
-                    System.out.println(Thread.currentThread().getName() + ": Requesting gate assignment.");
-                    assignedGate = atc.assignGate(id);
-                    if (assignedGate == -1) {
-                        Thread.sleep(1000);
-                    }
-                }
+            if (emergency) {
+                System.out.println(Thread.currentThread().getName() + ": EMERGENCY LANDING on runway (assigned Gate-" + assignedGate + ")");
+            } else {
+                System.out.println(Thread.currentThread().getName() + ": Landing on runway (assigned Gate-" + assignedGate + ")");
             }
+            Thread.sleep(400); 
             
             atc.completeLanding(id);
             
-            
+            // Remove from landing queue
+            atc.removePlaneFromQueue(id);
             
             System.out.println(Thread.currentThread().getName() + ": Taxiing to Gate-" + assignedGate + ".");
             Thread.sleep(1000); // Time to taxi to gate
             System.out.println(Thread.currentThread().getName() + ": Arrived at Gate-" + assignedGate + ".");
             
-            
+            // Perform ground operations
             performGroundOperations();
             
             // Request takeoff from ATC
