@@ -20,7 +20,7 @@ public class Airport {
     private final ATC atc;
     private Thread atcThread;
     
-    //capacity track
+    //capacity
     private final AtomicInteger planesOnGround = new AtomicInteger(0);
     
     // Stats
@@ -65,14 +65,12 @@ public class Airport {
         runwayOccupiedBy = planeId;
     }
     
-    //Clear Runway
     public void clearRunway() {
         int previousOccupant = runwayOccupiedBy;
         runway.set(false);
         runwayOccupiedBy = 0;
     }
     
-    //Increment & Decrement Ground
     public void incrementPlanesOnGround() {
         int newCount = planesOnGround.incrementAndGet();
         //System.out.println("\t Planes on ground " + newCount);
@@ -106,18 +104,26 @@ public class Airport {
     
     public void releaseGate(int gateNumber) {
         if (gateNumber < 1 || gateNumber > NUM_GATES) {
-            System.out.println("ERROR: Invalid gate number " + gateNumber + " - cannot release gate");
+            System.out.println("Aw Hell nah: Invalid gate number " + gateNumber);
             return;
         }
         gates[gateNumber - 1].Depart();
+    }
+    
+    public int findGateForPlane(int planeId) {
+        for (Gates gate : gates) {
+            if (gate.isOccupied() && gate.getOccupiedBy() == planeId) {
+                return gate.getGateNumber();
+            }
+        }
+        return -1; // Plane not found at any gate
     }
     
     //Get Truck
     public RefuelTruck getRefuelTruck() {
         return refuelTruck;
     }
-    
-    //Count passangers
+   
     public synchronized void updatePassengerCount(int count) {
         passengersBoarded += count;
     }
@@ -146,7 +152,7 @@ public class Airport {
         System.out.println("\n========== AIRPORT STATISTICS ==========");
         System.out.println("Planes Served: "+ planesServed);
         
-        // Check gates are empty
+        // Check gates empty
         boolean allGatesEmpty = true;
         for (Gates gate : gates) {
             if (gate.isOccupied()) {
@@ -159,7 +165,7 @@ public class Airport {
             System.out.println("All gates clear.");
         }
         
-        // Print waiting time statistics
+        // Print stat
         if (planesServed > 0) {
             System.out.println("\nWaiting Time Statistics:");
             System.out.println("- Maximum waiting time: " + maxWaitingTime/1000.0 + " seconds");

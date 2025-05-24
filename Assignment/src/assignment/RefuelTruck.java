@@ -7,7 +7,7 @@ public class RefuelTruck implements Runnable {
     
     private static final int[] queue = new int[6]; //Planes
     private static int NumInQueue = 0; 
-    private static int currentServing = 0; // Index of plane currently being served
+    private static int currentServing = 0; //plane served rn
     
     public RefuelTruck(int planeId) {
         this.requestingPlaneId = planeId;
@@ -34,7 +34,7 @@ public class RefuelTruck implements Runnable {
     private static synchronized int addToQueue(int planeId) {
         queue[NumInQueue] = planeId;
         NumInQueue++;
-        System.out.println("\t" + Thread.currentThread().getName() + ": Plane-" + planeId + " request received. Added to the queue (Position: " + NumInQueue + ")");
+        System.out.println("\t" + Thread.currentThread().getName() + ": Plane-" + planeId + " request received. Added to the queue (Ref Order: " + NumInQueue + ")");
         return NumInQueue; 
     }
     
@@ -51,9 +51,6 @@ public class RefuelTruck implements Runnable {
         System.out.println("\t" + Thread.currentThread().getName() +": Availble");
     }
     
-    /**
-     * Main refueling request method
-     */
     public synchronized void requestRefueling(int planeId){
         System.out.println("\t" + Thread.currentThread().getName() + ": Plane-" + planeId + " requesting refueling");
         
@@ -107,7 +104,6 @@ public class RefuelTruck implements Runnable {
         return NumInQueue;
     }
     
-    //is it bussy
     public synchronized boolean isBusy() {
         return refuelling || (currentServing < NumInQueue);
     }
@@ -116,7 +112,4 @@ public class RefuelTruck implements Runnable {
     public synchronized int getServingPlaneId() {
         return servingPlaneId;
     }
-    
-    
-  
  }

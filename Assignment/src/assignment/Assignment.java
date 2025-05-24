@@ -5,13 +5,11 @@ public class Assignment {
     public static int TOTAL_PLANES = 6;
     
     public static void main(String[] args) {
-        Airport airport = new Airport();
-        Random random = new Random();
-        
-      
         System.out.println("\tAsia Pacific Airport Simulation Started");
         System.out.println("\tTotal planes: " + TOTAL_PLANES);
-        
+        Airport airport = new Airport();
+        Random random = new Random();
+
         Thread[] planeThreads = new Thread[TOTAL_PLANES];
         
       
@@ -31,7 +29,6 @@ public class Assignment {
             } else {
                 spawnPlaneTime = random.nextInt(1000, 2000); 
             }
-            
             try {
                 Thread.sleep(spawnPlaneTime);
             } catch (InterruptedException e) {}
@@ -47,8 +44,7 @@ public class Assignment {
             } catch (InterruptedException e) {}
         }
         
-        System.out.println("\tAll planes have completed their operations");
-        
+        System.out.println("\tAll planes have completed");
         
         airport.printStatistics();
     }

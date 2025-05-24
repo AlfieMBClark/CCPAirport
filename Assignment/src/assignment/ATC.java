@@ -6,7 +6,7 @@ public class ATC implements Runnable {
     private final Airport airport;
     private volatile boolean running = true;
     
-    // Simple communication
+    //comms
     private volatile String request = "";
     private volatile int planeId = 0;
     private volatile boolean emergency = false;
@@ -18,7 +18,7 @@ public class ATC implements Runnable {
     private volatile boolean granted = false;
     private volatile int assignedGate = -1;
     
-    // Landing Queue System
+    //Queue
     private final int[] landingQueue = new int[TOTAL_PLANES];
     private int queueSize = 0;
     private int queueFront = 0;
@@ -37,12 +37,9 @@ public class ATC implements Runnable {
                 newRequest = false;
                 done = true;
             }
-            
-            // Check if we can process landing queue
             if (queueSize > 0 && !airport.isRunwayOccupied() && airport.canAcceptPlane()) {
                 processNextLanding();
             }
-            
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
@@ -55,19 +52,17 @@ public class ATC implements Runnable {
     }
     
     private void handleRequest() {
-        if ("reqLand".equals(request)) {
-            // Add to landing queue
+         if ("reqLand".equals(request)) {
             addToLandingQueue(planeId, emergency);
-            granted = true;
-            assignedGate = -1; // Will be assigned when actually landing
-            
+            granted = false;
+            assignedGate = -1;
+
             if (emergency) {
-                System.out.println(Thread.currentThread().getName() + ": EMERGENCY request from Plane-" + planeId + " - PRIORITY QUEUE POSITION");
-            } else {
-                System.out.println(Thread.currentThread().getName() + ": Landing request from Plane-" + planeId + " added to queue (Position: " + queueSize + ")");
+                System.out.println(Thread.currentThread().getName() + ": EMERGENCY request from Plane-" + planeId + " - ADDED TO PRIORITY QUEUE");
+            }else {
+                System.out.println(Thread.currentThread().getName() + ": Landing request from Plane-" + planeId + " added to queue (Land Order: " + queueSize + ")");
             }
-        }
-        else if ("reqTakeoff".equals(request)) {
+        }else if ("reqTakeoff".equals(request)) {
             if (!airport.isRunwayOccupied()) {
                 airport.occupyRunway(planeId);
                 granted = true;
@@ -97,7 +92,7 @@ public class ATC implements Runnable {
             airport.incrementPlanesServed();
         }
         else if ("gateComplete".equals(request)) {
-            System.out.println(Thread.currentThread().getName() + ": Gate-" + gate + " released");
+            System.out.println(Thread.currentThread().getName() + ": Gate-" + gate + " Is Free!");
             airport.releaseGate(gate);
         }
     }
@@ -105,16 +100,12 @@ public class ATC implements Runnable {
     private void addToLandingQueue(int planeId, boolean isEmergency) {
         
         if (isEmergency) {
-            // Emergency plane goes to front of queue
-            // Shift everything back one position
+            //add to front
             for (int i = queueSize; i > 0; i--) {
                 landingQueue[queueFront + i] = landingQueue[queueFront + i - 1];
             }
-            
-            // Put emergency plane at front
             landingQueue[queueFront] = planeId;
             queueSize++;
-            
             System.out.println(Thread.currentThread().getName() + ": EMERGENCY Plane-" + planeId + " moved to FRONT of landing queue");
         } else {
             int position = (queueFront + queueSize) % TOTAL_PLANES;
@@ -126,48 +117,43 @@ public class ATC implements Runnable {
     }
     
     private void processNextLanding() {
-    if (queueSize == 0) {
-        return;
-    }
-    
-    // Get next plane from front of queue
-    int nextPlane = landingQueue[queueFront];
-    boolean isEmergency = (nextPlane == 5); // Plane-5 is emergency
-    
-    int gateNum = airport.findAvailableGate(planeId);
-    if (gateNum != -1) {
-        // Both runway is clear and gate is available - grant landing
-        airport.occupyRunway(nextPlane);
-        airport.occupyGate(gateNum, nextPlane);
-        airport.incrementPlanesOnGround();
-        
-        if (isEmergency) {
-            System.out.println(Thread.currentThread().getName() + ": EMERGENCY Landing Permission GRANTED for Plane-" + nextPlane);
-            System.out.println(Thread.currentThread().getName() + ": Emergency Plane-" + nextPlane + " assigned to Gate-" + gateNum);
-        } else {
-            System.out.println(Thread.currentThread().getName() + ": Landing Permission GRANTED for Plane-" + nextPlane);
-            System.out.println(Thread.currentThread().getName() + ": Plane-" + nextPlane + " assigned to Gate-" + gateNum);
+        if (queueSize == 0) {
+            return;
         }
+        int nextPlane = landingQueue[queueFront];
+        boolean isEmergency = (nextPlane == 5);
         
-        // Remove from queue only after successful landing with gate assignment
-        queueFront = (queueFront + 1) % TOTAL_PLANES;
-        queueSize--;
-        
-        printQueueStatus(); // Show updated queue status
-        
-    } else {
-        // No gates available - plane stays in queue and cannot land
-        if (isEmergency) {
-            System.out.println(Thread.currentThread().getName() + ": EMERGENCY Plane-" + nextPlane + " in queue but no gates available - waiting");
+        int gateNum = airport.findAvailableGate(nextPlane);
+        if (gateNum != -1) {
+            //Landing opps
+            airport.occupyRunway(nextPlane);
+            airport.occupyGate(gateNum, nextPlane);
+            airport.incrementPlanesOnGround();
+            if (isEmergency) {
+                System.out.println(Thread.currentThread().getName() + ": EMERGENCY Landing Permission GRANTED for Plane-" + nextPlane + " Proceed to Gate-"+gateNum+" once landed.");
+            } else {
+                System.out.println(Thread.currentThread().getName() + ": Landing Permission GRANTED for Plane-" + nextPlane+ " Proceed to Gate-"+gateNum+" once landed.");
+            }
+
+            // Rem from queue
+            queueFront = (queueFront + 1) % TOTAL_PLANES;
+            queueSize--;
+
+            printQueueStatus();
+
         } else {
-            System.out.println(Thread.currentThread().getName() + ": Plane-" + nextPlane + " in queue but no gates available - waiting");
+            //Remain Wilson!
+            if (isEmergency) {
+                System.out.println(Thread.currentThread().getName() + ": EMERGENCY Plane-" + nextPlane + " in queue but no gates available - waiting");
+            } else {
+                System.out.println(Thread.currentThread().getName() + ": Plane-" + nextPlane + " in queue but no gates available - waiting");
+            }
         }
     }
-}
     
     private void printQueueStatus() {
         if (queueSize == 0) {
-            System.out.println(Thread.currentThread().getName() + ": Landing queue is empty");
+            System.out.println(Thread.currentThread().getName() + ": Landing queue empty");
             return;
         }
         
@@ -176,7 +162,7 @@ public class ATC implements Runnable {
             int index = (queueFront + i) % TOTAL_PLANES;
             int planeId = landingQueue[index];
             System.out.print("Plane-" + planeId);
-            if (planeId == 5) { // Emergency plane
+            if (planeId == 5) {
                 System.out.print("(E)");
             }
             if (i < queueSize - 1) {
@@ -186,10 +172,9 @@ public class ATC implements Runnable {
         System.out.println("]");
     }
     
-    // Check if a plane has been granted landing (for plane to check)
+    
     public boolean hasLandingPermission(int planeId) {
-        // Check if plane is currently occupying runway (meaning it was granted)
-        return airport.isRunwayOccupied(); // This is a simple check - could be improved
+        return airport.isRunwayOccupied() &&  airport.findGateForPlane(planeId) != -1;
     }
     
     
@@ -215,12 +200,12 @@ public class ATC implements Runnable {
     
     
     public boolean requestLanding(int id, boolean isEmergency, int[] gateRef) {
-        sendToATC("reqLand", id, isEmergency, 0);
+    sendToATC("reqLand", id, isEmergency, 0);
 
-        // After processing, check if the plane actually got a gate assigned during landing
-        // Since processNextLanding now assigns gates immediately, we need to find which gate was assigned
-        int actualGate = airport.findAvailableGate(id);
-        gateRef[0] = actualGate;
+        // After the plane is added to queue, we need to find which gate was actually assigned
+        // when the plane landed (this happens in processNextLanding)
+        // For now, just return -1 since gate assignment happens during actual landing
+        gateRef[0] = -1; // Gate will be assigned when plane actually lands
 
         return granted;
     }
