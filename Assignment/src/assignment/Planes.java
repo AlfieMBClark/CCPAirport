@@ -113,9 +113,8 @@ public class Planes implements Runnable {
     
     private void performGroundOperations(){
         
-        Thread refuelingThread = new Thread(() -> {
-            airport.getRefuelTruck().requestRefueling(id);
-        }, "RefuelRequest-" + id);
+        RefuelTruck refuelingCrew = new RefuelTruck(id);
+        Thread refuelingThread = new Thread(refuelingCrew, "RefuelThread-" + id);
         refuelingThread.start();
         
         
