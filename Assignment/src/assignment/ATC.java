@@ -121,9 +121,9 @@ public class ATC implements Runnable {
      int nextPlane = landingQueue[queueFront];
      boolean isEmergency = (nextPlane == 5);
 
-     // CHANGE: Check if gates are available using semaphore before trying to land
+     //check availble
      if (airport.areGatesAvailable()) {
-         int gateNum = airport.findAvailableGate(nextPlane); // This will acquire semaphore
+         int gateNum = airport.findAvailableGate(nextPlane);
          if (gateNum != -1) {
              //Landing opps
              airport.occupyRunway(nextPlane);
@@ -178,7 +178,7 @@ public class ATC implements Runnable {
     }
     
     
-    // Request to ATC thread
+    // Req to ATC thread
     private void sendToATC(String requestType, int id, boolean isEmergency, int gateNumber) {
         request = requestType;
         planeId = id;
@@ -199,10 +199,10 @@ public class ATC implements Runnable {
     }
     
     
+ 
     public boolean requestLanding(int id, boolean isEmergency, int[] gateRef) {
     sendToATC("reqLand", id, isEmergency, 0);
-        gateRef[0] = -1; // Gate assigned while landing
-
+        gateRef[0] = -1; // Gate to be assigned
         return granted;
     }
 

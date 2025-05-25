@@ -94,7 +94,7 @@ public class Airport {
                     return gate.getGateNumber();
                 }
             }
-            gateSemaphore.release(); // Release if no gate found
+            gateSemaphore.release(); // Rel if no gate found
             return -1;
             
         } catch (InterruptedException e) {

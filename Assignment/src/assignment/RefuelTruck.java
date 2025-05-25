@@ -60,7 +60,7 @@ public class RefuelTruck implements Runnable {
             position = addToQueue(planeId);
         }
         
-        //plane's turn
+        //planes turn
         while (true) {
             synchronized (RefuelTruck.class) {
                 // Check 
@@ -86,7 +86,7 @@ public class RefuelTruck implements Runnable {
             //Wait check
             synchronized (RefuelTruck.class) {
                 try{
-                    RefuelTruck.class.wait(100); // Wait 100ms or until notified
+                    RefuelTruck.class.wait(100); // Wait or until notified
                 }catch (InterruptedException e){}
             }
         }
