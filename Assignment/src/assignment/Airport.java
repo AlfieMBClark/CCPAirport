@@ -2,7 +2,7 @@ package assignment;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.Semaphore; // Add this import
+import java.util.concurrent.Semaphore;
 
 public class Airport {
     private static final int NUM_GATES = 3;

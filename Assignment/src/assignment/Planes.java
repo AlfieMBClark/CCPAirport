@@ -114,19 +114,19 @@ public class Planes implements Runnable {
     private void performGroundOperations(){
         
         RefuelTruck refuelingCrew = new RefuelTruck(id);
-        Thread refuelingThread = new Thread(refuelingCrew, "RefuelThread-" + id);
+        Thread refuelingThread = new Thread(refuelingCrew, "RefuelTruckThread-" + id);
         refuelingThread.start();
         
         
         Passenger disembarkingPassengers = new Passenger(id, passengers, false);
-        Thread PassengerDisembarkThread = new Thread(disembarkingPassengers, "DisembarkThread-" + id);
+        Thread PassengerDisembarkThread = new Thread(disembarkingPassengers, "PassengerDisembarkThread-" + id);
         PassengerDisembarkThread.start();
         
         try {
             PassengerDisembarkThread.join();
         } catch (InterruptedException e) {}
         
-        // Reset passenger count
+        //No pass on plane
         passengers = 0;
         
         
@@ -141,7 +141,7 @@ public class Planes implements Runnable {
         
         passengers = Passenger.generatePassengerCount(capacity);
         Passenger boardingPassengers = new Passenger(id, passengers, true);
-        Thread PassengerBoardingThread = new Thread(boardingPassengers, "BoardingThread-" + id);
+        Thread PassengerBoardingThread = new Thread(boardingPassengers, "PassengerBoardingThread-" + id);
         PassengerBoardingThread.start();
         
         try {
