@@ -4,23 +4,26 @@ public class RefuelTruck implements Runnable {
     private static boolean refuelling = false;
     private static int servingPlaneId = 0;
     private final int requestingPlaneId;
+    private final String planeThreadName;
     
-    private static final int[] queue = new int[6]; //Planes
+    private static final int[] queue = new int[6];
     private static int NumInQueue = 0; 
     private static int currentServing = 0; //plane served rn
     
     public RefuelTruck(int planeId) {
         this.requestingPlaneId = planeId;
+        this.planeThreadName = "Plane-" + planeId;
     }
    
     public RefuelTruck() {
         this.requestingPlaneId = -1;
+        this.planeThreadName = null;
     }
     
     @Override
     public void run() {
         if (requestingPlaneId != -1) {
-            requestRefueling(requestingPlaneId);
+            requestRefueling(requestingPlaneId, planeThreadName);
         }
     }
     
@@ -43,8 +46,7 @@ public class RefuelTruck implements Runnable {
         System.out.println("\t" + Thread.currentThread().getName() +": Available");
     }
     
-    public static synchronized void requestRefueling(int planeId){
-        System.out.println("\t" + Thread.currentThread().getName() + ": Plane-" + planeId + " requesting refueling");
+    public static synchronized void requestRefueling(int planeId, String planeThreadName){
         
         // Add queue
         int position;
@@ -53,15 +55,15 @@ public class RefuelTruck implements Runnable {
         }
         
         //Wait for plane's turn
-        while (true) {
-            synchronized (RefuelTruck.class) {
+        while (true) { 
+           synchronized (RefuelTruck.class) {
                 if (isPlanesTurn(planeId) && !refuelling) {
                     refuelling = true;
                     servingPlaneId = planeId;
                     
-                    System.out.println("\t" + Thread.currentThread().getName() +"\t: Starting refueling for Plane-" + planeId + " (Position: " + position + ")");
+                    System.out.println("\t" + Thread.currentThread().getName() +": Starting refueling for Plane-" + planeId);
                     try{
-                        Thread.sleep(2000); 
+                        Thread.sleep(6000); 
                     }catch (InterruptedException e){}
                     System.out.println("\t" + Thread.currentThread().getName() +": Completed refueling for Plane-" + planeId);
                     
@@ -80,9 +82,8 @@ public class RefuelTruck implements Runnable {
                     RefuelTruck.class.wait(100); // Wait or notified
                 }catch (InterruptedException e){}
             }
+            System.out.println("\t" + planeThreadName + ": Plane-" + planeId + " refueling completed!");
         }
-        
-        System.out.println("\t" + Thread.currentThread().getName() + ": Plane-" + planeId + " refueling completed!");
     }
     
     public static synchronized int getQueueSize() {

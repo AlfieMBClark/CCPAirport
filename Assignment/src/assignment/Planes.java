@@ -42,16 +42,22 @@ public class Planes implements Runnable {
                 System.out.println(Thread.currentThread().getName() + ": EMERGENCY LANDING request due to low fuel!");
                 atc.requestLanding(id, true, gateReference);
 
-                while (!atc.hasLandingPermission(id)) {
-                    Thread.sleep(500); 
+                if(!atc.hasLandingPermission(id)){
+                    System.out.println(Thread.currentThread().getName() + ": Maintaining Holding Pattern Until Clearance Recieved.");
+                    while (!atc.hasLandingPermission(id)) {
+                        Thread.sleep(500); 
+                    }
                 }
 
             }else {
                 System.out.println(Thread.currentThread().getName() + ": Requesting landing permission");
                 atc.requestLanding(id, false, gateReference);
-
-                while (!atc.hasLandingPermission(id)) {
-                    Thread.sleep(500); 
+                
+                if(!atc.hasLandingPermission(id)){
+                    System.out.println(Thread.currentThread().getName() + ": Maintaining Holding Pattern Until Clearance Recieved.");
+                    while (!atc.hasLandingPermission(id)) {
+                        Thread.sleep(500); 
+                    }
                 }
             }
 
@@ -61,7 +67,7 @@ public class Planes implements Runnable {
 
             //land
             System.out.println(Thread.currentThread().getName() + ": Received landing clearance - Landing on runway.");
-            Thread.sleep(400); 
+            Thread.sleep(1000); 
     
             //Find assigned gate
             assignedGate = airport.findGateForPlane(id);
@@ -79,7 +85,7 @@ public class Planes implements Runnable {
                 atc.completeLanding(id);
             }else{
                 atc.completeLanding(id);
-                Thread.sleep(1000); 
+                Thread.sleep(2000); 
             } 
             System.out.println(Thread.currentThread().getName() + ": Arrived at Gate-" + assignedGate + ".");
 
@@ -93,17 +99,17 @@ public class Planes implements Runnable {
                 takeoffGranted = atc.requestTakeoff(id);
 
                 if (!takeoffGranted) {
-                    Thread.sleep(1000);
+                    Thread.sleep(3000);
                 }
             }
             //Depart
-            System.out.println("\t"+Thread.currentThread().getName() + ": Departing from Gate-" + assignedGate + ". Heading to Runway.");
-            Thread.sleep(500);
+            System.out.println(Thread.currentThread().getName() + ": Departing from Gate-" + assignedGate + ". Heading to Runway.");
+            Thread.sleep(2000);
 
             atc.releaseGate(assignedGate, id);
             
             System.out.println(Thread.currentThread().getName() + ":V1, Rotate, Positive Rate. Gear up.");
-            Thread.sleep(400); 
+            Thread.sleep(2000); 
             System.out.println(Thread.currentThread().getName() + ": Successfully taken off");
             atc.completeTakeoff(id);
 
@@ -112,14 +118,14 @@ public class Planes implements Runnable {
 
     
     private void performGroundOperations(){
-        
+         System.out.println("\t" + Thread.currentThread().getName()+ ": Requesting refueling");
         RefuelTruck refuelingCrew = new RefuelTruck(id);
-        Thread refuelingThread = new Thread(refuelingCrew, "RefuelTruckThread-" + id);
+        Thread refuelingThread = new Thread(refuelingCrew, "RefuelTruck");
         refuelingThread.start();
         
         
         Passenger disembarkingPassengers = new Passenger(id, passengers, false);
-        Thread PassengerDisembarkThread = new Thread(disembarkingPassengers, "PassengerDisembarkThread-" + id);
+        Thread PassengerDisembarkThread = new Thread(disembarkingPassengers, "PassengerDisembark-" + id);
         PassengerDisembarkThread.start();
         
         try {
@@ -131,7 +137,7 @@ public class Planes implements Runnable {
         
         
         CleanRefill cleaningCrew = new CleanRefill(id);
-        Thread cleaningThread = new Thread(cleaningCrew, "CleaningThread-" + id);
+        Thread cleaningThread = new Thread(cleaningCrew, "Cleaning&Restocking-" + id);
         cleaningThread.start();
         
         try {
@@ -141,7 +147,7 @@ public class Planes implements Runnable {
         
         passengers = Passenger.generatePassengerCount(capacity);
         Passenger boardingPassengers = new Passenger(id, passengers, true);
-        Thread PassengerBoardingThread = new Thread(boardingPassengers, "PassengerBoardingThread-" + id);
+        Thread PassengerBoardingThread = new Thread(boardingPassengers, "PassengerBoarding-" + id);
         PassengerBoardingThread.start();
         
         try {

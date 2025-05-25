@@ -54,12 +54,6 @@ public class ATC implements Runnable {
             addToLandingQueue(planeId, emergency);
             granted = false;
             assignedGate = -1;
-
-            if (emergency) {
-                System.out.println(Thread.currentThread().getName() + ": EMERGENCY request from Plane-" + planeId + " - ADDED TO PRIORITY QUEUE");
-            }else {
-                System.out.println(Thread.currentThread().getName() + ": Landing request from Plane-" + planeId + " added to queue (Land Order: " + queueSize + ")");
-            }
         }else if ("reqTakeoff".equals(request)) {
             if (!airport.isRunwayOccupied()) {
                 airport.occupyRunway(planeId);
@@ -69,8 +63,7 @@ public class ATC implements Runnable {
                 granted = false;
                 System.out.println(Thread.currentThread().getName() + ": Takeoff Permission DENIED for Plane-" + planeId + " - Runway occupied");
             }
-        }
-        else if ("reqGate".equals(request)) {
+        }else if ("reqGate".equals(request)) {
             assignedGate = airport.findAvailableGate(planeId);  // Use the plane's ID
             if (assignedGate != -1) {
                 airport.occupyGate(assignedGate, planeId);
@@ -78,18 +71,15 @@ public class ATC implements Runnable {
             } else {
                 System.out.println(Thread.currentThread().getName() + ": No gates available for Plane-" + planeId);
             }
-        }
-        else if ("LandComplete".equals(request)) {
-            System.out.println(Thread.currentThread().getName() + ": Runway clear");
+        }else if ("LandComplete".equals(request)) {
+            System.out.println(Thread.currentThread().getName() + ": Plane-"+planeId+" has left runway. Runway clear");
             airport.clearRunway();  
-        }
-        else if ("TakeoffComplete".equals(request)) {
-            System.out.println(Thread.currentThread().getName() + ": Runway clear");
+        }else if ("TakeoffComplete".equals(request)) {
+            System.out.println(Thread.currentThread().getName() + ": Plane-"+planeId+" has left runway. Runway clear");
             airport.clearRunway();
             airport.decrementPlanesOnGround();
             airport.incrementPlanesServed();
-        }
-        else if ("gateComplete".equals(request)) {
+        }else if ("gateComplete".equals(request)) {
             System.out.println(Thread.currentThread().getName() + ": Gate-" + gate + " Is Free!");
             airport.releaseGate(gate);
         }
@@ -104,11 +94,12 @@ public class ATC implements Runnable {
             }
             landingQueue[queueFront] = planeId;
             queueSize++;
-            System.out.println(Thread.currentThread().getName() + ": EMERGENCY Plane-" + planeId + " moved to FRONT of landing queue");
+            System.out.println(Thread.currentThread().getName() + ": EMERGENCY Plane-" + planeId + " Emergency Procedures done. Emergency Services on Standby. Hold for next available slot");
         } else {
             int position = (queueFront + queueSize) % TOTAL_PLANES;
             landingQueue[position] = planeId;
             queueSize++;
+            System.out.println(Thread.currentThread().getName() + ": Landing request from Plane-" + planeId + " Recieved. Standby for turn(Land Order: " + queueSize + ")");
         }
         
         printQueueStatus();
@@ -153,7 +144,7 @@ public class ATC implements Runnable {
     
     private void printQueueStatus() {
         if (queueSize == 0) {
-            System.out.println(Thread.currentThread().getName() + ": Landing queue empty");
+            //System.out.println(Thread.currentThread().getName() + ": Landing queue empty");
             return;
         }
         
@@ -187,14 +178,11 @@ public class ATC implements Runnable {
         done = false;
         newRequest = true;
         
-        // Wait for ATC to process
+        // Wait to process
         while (!done) {
             try {
                 Thread.sleep(10);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
+            } catch (InterruptedException e) {}
         }
     }
     

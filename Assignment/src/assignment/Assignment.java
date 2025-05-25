@@ -22,12 +22,12 @@ public class Assignment {
            
             int spawnPlaneTime;
             if (planeId >= 3 && planeId <= 5) {
-                spawnPlaneTime = random.nextInt(400, 1000); 
+                spawnPlaneTime = random.nextInt(500, 1000); 
                 if (isEmergency){
                     System.out.println("EMERGENCY PLANE INTRODUCTION COMING");
                 }
             } else {
-                spawnPlaneTime = random.nextInt(1000, 2000); 
+                spawnPlaneTime = random.nextInt(1500, 2000); 
             }
             try {
                 Thread.sleep(spawnPlaneTime);
@@ -40,11 +40,11 @@ public class Assignment {
         for (int i = 0; i < TOTAL_PLANES; i++) {
             try {
                 planeThreads[i].join();
-                System.out.println("\t" + planeThreads[i].getName() + " completed operations");
+                System.out.println("\t" + planeThreads[i].getName() + " completed");
             } catch (InterruptedException e) {}
         }
         
-        System.out.println("\tAll planes have completed");
+        System.out.println("\n\tAll planes have completed");
         
         airport.printStatistics();
     }

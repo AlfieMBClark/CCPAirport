@@ -15,7 +15,7 @@ public class Airport {
     private final Gates[] gates = new Gates[NUM_GATES];
     private final RefuelTruck refuelTruck = new RefuelTruck();
     
-    //SEMAPHORE FOR GATES
+    //gate sem
     private final Semaphore gateSemaphore = new Semaphore(NUM_GATES, true); 
     
     // ATC
