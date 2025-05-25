@@ -13,11 +13,9 @@ public class ATC implements Runnable {
     private volatile int gate = 0;
     private volatile boolean newRequest = false;
     private volatile boolean done = false;
-    
     // Response
     private volatile boolean granted = false;
     private volatile int assignedGate = -1;
-    
     //Queue
     private final int[] landingQueue = new int[TOTAL_PLANES];
     private int queueSize = 0;

@@ -7,7 +7,6 @@ import java.util.concurrent.Semaphore; // Add this import
 public class Airport {
     private static final int NUM_GATES = 3;
     private static final int MAX_PLANES = 3;
-    
     //Runway
     //False = free -- True = occupied
     private AtomicBoolean runway = new AtomicBoolean(false);
@@ -16,16 +15,15 @@ public class Airport {
     private final Gates[] gates = new Gates[NUM_GATES];
     private final RefuelTruck refuelTruck = new RefuelTruck();
     
-    // ADD SEMAPHORE FOR GATES
-    private final Semaphore gateSemaphore = new Semaphore(NUM_GATES, true); // Fair semaphore
+    //SEMAPHORE FOR GATES
+    private final Semaphore gateSemaphore = new Semaphore(NUM_GATES, true); 
     
     // ATC
     private final ATC atc;
     private Thread atcThread;
-    
-    //capacity
+
     private final AtomicInteger planesOnGround = new AtomicInteger(0);
-    
+  
     // Stats
     private long totalWaitingTime = 0;
     private long maxWaitingTime = 0;
@@ -162,17 +160,17 @@ public class Airport {
         System.out.println("\n========== AIRPORT STATISTICS ==========");
         System.out.println("Planes Served: "+ planesServed);
         
-        // Check gates empty
-        boolean allGatesEmpty = true;
-        for (Gates gate : gates) {
-            if (gate.isOccupied()) {
-                allGatesEmpty = false;
-                System.out.println(" Gate-" + gate.getGateNumber() + " is still occupied!");
-            }
-        }
+        //Check gates
+        //boolean allGatesEmpty = true;
+        //for (Gates gate : gates) {
+        //   if (gate.isOccupied()) {
+        //        allGatesEmpty = false;
+        //        System.out.println(" Gate-" + gate.getGateNumber() + " is still occupied!");
+        //    }
+        //}
         
-        if (allGatesEmpty) {
-            System.out.println("All gates clear.");
+        if (planesServed==6  ) {
+            System.out.println("All Planes have been served!");
         }
         
         // Print stat
@@ -184,7 +182,7 @@ public class Airport {
         }
         
         // Print service statistics
-        System.out.println("\nService Statistics:");
+        System.out.println("\nService Stats:");
         System.out.println("- Number of planes served: " + planesServed);
         System.out.println("- Number of passengers boarded: " + passengersBoarded);
         

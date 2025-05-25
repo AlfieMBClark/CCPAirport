@@ -24,7 +24,7 @@ public class Assignment {
             if (planeId >= 3 && planeId <= 5) {
                 spawnPlaneTime = random.nextInt(400, 1000); 
                 if (isEmergency){
-                    System.out.println("EMERGENCY PLANE!!!!");
+                    System.out.println("EMERGENCY PLANE INTRODUCTION COMING");
                 }
             } else {
                 spawnPlaneTime = random.nextInt(1000, 2000); 
