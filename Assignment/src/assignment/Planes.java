@@ -79,7 +79,7 @@ public class Planes implements Runnable {
             //taxi
             System.out.println(Thread.currentThread().getName() + ": Landed. Moving to Gate-" + assignedGate + ".");
             if(id == 2){
-                Thread.sleep(4000); 
+                Thread.sleep(3000); 
                 atc.completeLanding(id);
             }else{
                 atc.completeLanding(id);

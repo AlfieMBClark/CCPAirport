@@ -96,10 +96,6 @@ public class RefuelTruck implements Runnable {
         return NumInQueue;
     }
     
-    public static synchronized boolean isBusy() {
-        return refuelling || (currentServing < NumInQueue);
-    }
-    
     public static synchronized int getServingPlaneId() {
         return servingPlaneId;
     }

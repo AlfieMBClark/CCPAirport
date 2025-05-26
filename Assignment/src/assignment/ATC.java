@@ -125,7 +125,6 @@ public class ATC implements Runnable {
              } else {
                  System.out.println(Thread.currentThread().getName() + ": Landing Permission GRANTED for Plane-" + nextPlane+ " Proceed to Gate-"+gateNum+" once landed.");
              }
-
              // Rem from queue
              NextLand = (NextLand + 1) % TotPlanes;
              queueSize--;
@@ -135,9 +134,11 @@ public class ATC implements Runnable {
      } else {
          //Remain Wilson!
          if (isEmergency) {
-             System.out.println(Thread.currentThread().getName() + ": EMERGENCY Plane-" + nextPlane + " in queue but no gates available - waiting");
+             System.out.println(Thread.currentThread().getName() + ": EMERGENCY Plane-" + nextPlane + 
+                     " in queue but no gates available - waiting");
          } else {
-             System.out.println(Thread.currentThread().getName() + ": Plane-" + nextPlane + " in queue but no gates available - waiting");
+             System.out.println(Thread.currentThread().getName() + ": Plane-" + nextPlane + 
+                     " in queue but no gates available - waiting");
          }
      }
  }

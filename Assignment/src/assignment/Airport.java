@@ -7,6 +7,7 @@ import java.util.concurrent.Semaphore;
 public class Airport {
     private static final int NUM_GATES = 3;
     private static final int MAX_PLANES = 3;
+    
     //Runway
     //False = free -- True = occupied
     private AtomicBoolean runway = new AtomicBoolean(false);
@@ -148,43 +149,40 @@ public class Airport {
     
     
     public void printStatistics() {
-        System.out.println("\tAirport: Shutting down ATC system...");
-        atc.shutdown();
-        try {
-            atcThread.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+         //gate statuw
+        boolean allGatesEmpty = true;
+        for (Gates gate : gates) {
+           if (gate.isOccupied()) {
+               allGatesEmpty = false;
+               System.out.println(" Gate-" + gate.getGateNumber() + " is still occupied!");
+            }
         }
         
-        System.out.println("\n========== AIRPORT STATISTICS ==========");
-        System.out.println("Planes Served: "+ planesServed);
         
-        //gate statuw
-        //boolean allGatesEmpty = true;
-        //for (Gates gate : gates) {
-        //   if (gate.isOccupied()) {
-        //        allGatesEmpty = false;
-        //        System.out.println(" Gate-" + gate.getGateNumber() + " is still occupied!");
-        //    }
-        //}
-        
-        
-        if (planesServed==6 &&  planesOnGround.get()==0 ) {
+        if (planesServed==6 &&  planesOnGround.get()==0 && allGatesEmpty==true) {
             System.out.println("All Planes have been served!");
+             System.out.println("\tAirport: Shutting down ATC system...");
+            atc.shutdown();
+            try {
+                atcThread.join();
+            } catch (InterruptedException e) {}
+            System.out.println("\n========== AIRPORT STATISTICS ==========");
+            System.out.println("Planes Served: "+ planesServed);
+            if (planesServed > 0) {
+                System.out.println("\nWaiting Time Statistics:");
+                System.out.println("- Maximum waiting time: " + maxWaitingTime/1000.0 + " seconds");
+                System.out.println("- Average waiting time: " + (totalWaitingTime/planesServed)/1000.0 + " seconds");
+                System.out.println("- Minimum waiting time: " + minWaitingTime/1000.0 + " seconds");
+            }
+
+            System.out.println("\nService Stats:");
+            System.out.println("- Number of planes served: " + planesServed);
+            System.out.println("- Number of passengers boarded: " + passengersBoarded);
+
+            System.out.println("=========================================");
+        }else{
+            System.out.println("Error Occured");
         }
-        
-      
-        if (planesServed > 0) {
-            System.out.println("\nWaiting Time Statistics:");
-            System.out.println("- Maximum waiting time: " + maxWaitingTime/1000.0 + " seconds");
-            System.out.println("- Average waiting time: " + (totalWaitingTime/planesServed)/1000.0 + " seconds");
-            System.out.println("- Minimum waiting time: " + minWaitingTime/1000.0 + " seconds");
-        }
-        
-        System.out.println("\nService Stats:");
-        System.out.println("- Number of planes served: " + planesServed);
-        System.out.println("- Number of passengers boarded: " + passengersBoarded);
-        
-        System.out.println("=========================================");
     }
+   
 }
