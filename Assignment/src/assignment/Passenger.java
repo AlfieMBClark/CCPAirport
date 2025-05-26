@@ -16,31 +16,33 @@ public class Passenger implements Runnable {
     
     @Override
     public void run() {
-        try {
-            if (DisemBoard) {
-                performBoarding();
-            } else {
-                performDisembarking();
+        if (DisemBoard) {
+            performBoarding();
+        } else {
+            performDisembarking();
             }
-        } catch (InterruptedException e) {}
     }
     
-    private void performBoarding() throws InterruptedException {
+    private void performBoarding(){
         System.out.println("\t\t" + Thread.currentThread().getName() +":\t" + passengerCount + " passengers boarding Plane-" + planeId);
-        // Boarding time
-        int boardingTime = calculateOperationTime(passengerCount);
-        Thread.sleep(boardingTime);
+        // Boardinggg
+        int boardingTime = DisBorTime(passengerCount);
+        try{
+            Thread.sleep(boardingTime);
+        }catch (InterruptedException e){}
         
         System.out.println("\t\t" + Thread.currentThread().getName() + ": All " + passengerCount + " passengers have boarded Plane-"+ planeId);
     }
     
-    private void performDisembarking() throws InterruptedException {
+    private void performDisembarking(){
         System.out.println("\t\t" + Thread.currentThread().getName() +":\t" + passengerCount + " passengers disembarking from Plane-" + planeId);
         
-        // Disembarking time
-        int disembarkTime = calculateOperationTime(passengerCount);
-        Thread.sleep(disembarkTime);
-        
+        // Disembarkinggg
+        int disembarkTime = DisBorTime(passengerCount);
+       try{
+           Thread.sleep(disembarkTime);
+       }catch (InterruptedException e){}
+      
         System.out.println("\t\t" + Thread.currentThread().getName() + ": All " + passengerCount + " passengers have disembarked from Plane-"+planeId);
     }
     
@@ -49,9 +51,7 @@ public class Passenger implements Runnable {
         return random.nextInt(maxCapacity) + 1;
     }
     
-    
-    //time
-    public static int calculateOperationTime(int passengerCount) {
+    public static int DisBorTime(int passengerCount) {
         return 1000 + (passengerCount * 30);
     }
 }

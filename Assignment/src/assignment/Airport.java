@@ -62,7 +62,7 @@ public class Airport {
     }
     
     public void clearRunway() {
-        int previousOccupant = runwayOccupiedBy;
+        int prevOccupant = runwayOccupiedBy;
         runway.set(false);
         runwayOccupiedBy = 0;
     }
@@ -123,10 +123,9 @@ public class Airport {
                 return gate.getGateNumber();
             }
         }
-        return -1; // Plane not found at any gate
+        return -1; // Plane not ta any gate
     }
     
-    //Get Truck
     public RefuelTruck getRefuelTruck() {
         return refuelTruck;
     }
@@ -160,7 +159,7 @@ public class Airport {
         System.out.println("\n========== AIRPORT STATISTICS ==========");
         System.out.println("Planes Served: "+ planesServed);
         
-        //Check gates
+        //gate statuw
         //boolean allGatesEmpty = true;
         //for (Gates gate : gates) {
         //   if (gate.isOccupied()) {
@@ -169,11 +168,12 @@ public class Airport {
         //    }
         //}
         
-        if (planesServed==6  ) {
+        
+        if (planesServed==6 &&  planesOnGround.get()==0 ) {
             System.out.println("All Planes have been served!");
         }
         
-        // Print stat
+      
         if (planesServed > 0) {
             System.out.println("\nWaiting Time Statistics:");
             System.out.println("- Maximum waiting time: " + maxWaitingTime/1000.0 + " seconds");
@@ -181,7 +181,6 @@ public class Airport {
             System.out.println("- Minimum waiting time: " + minWaitingTime/1000.0 + " seconds");
         }
         
-        // Print service statistics
         System.out.println("\nService Stats:");
         System.out.println("- Number of planes served: " + planesServed);
         System.out.println("- Number of passengers boarded: " + passengersBoarded);

@@ -1,6 +1,6 @@
 package assignment;
 
-import static assignment.Assignment.TOTAL_PLANES;
+import static assignment.Assignment.TotPlanes;
 
 public class ATC implements Runnable {
     private final Airport airport;
@@ -17,9 +17,9 @@ public class ATC implements Runnable {
     private volatile boolean granted = false;
     private volatile int assignedGate = -1;
     //Queue
-    private final int[] landingQueue = new int[TOTAL_PLANES];
+    private final int[] landingOrder = new int[TotPlanes];
     private int queueSize = 0;
-    private int queueFront = 0;
+    private int NextLand = 0;
     
     public ATC(Airport airport) {
         this.airport = airport;
@@ -59,7 +59,7 @@ public class ATC implements Runnable {
                 airport.occupyRunway(planeId);
                 granted = true;
                 System.out.println(Thread.currentThread().getName() + ": Takeoff Permission GRANTED for Plane-" + planeId);
-            } else {
+            }else{
                 granted = false;
                 System.out.println(Thread.currentThread().getName() + ": Takeoff Permission DENIED for Plane-" + planeId + " - Runway occupied");
             }
@@ -86,18 +86,17 @@ public class ATC implements Runnable {
     }
     
     private void addToLandingQueue(int planeId, boolean isEmergency) {
-        
         if (isEmergency) {
-            //add to front
+            //add front
             for (int i = queueSize; i > 0; i--) {
-                landingQueue[queueFront + i] = landingQueue[queueFront + i - 1];
+                landingOrder[NextLand + i] = landingOrder[NextLand + i - 1];
             }
-            landingQueue[queueFront] = planeId;
+            landingOrder[NextLand] = planeId;
             queueSize++;
             System.out.println(Thread.currentThread().getName() + ": EMERGENCY Plane-" + planeId + " Emergency Procedures done. Emergency Services on Standby. Hold for next available slot");
         } else {
-            int position = (queueFront + queueSize) % TOTAL_PLANES;
-            landingQueue[position] = planeId;
+            int position = (NextLand + queueSize) % TotPlanes;
+            landingOrder[position] = planeId;
             queueSize++;
             System.out.println(Thread.currentThread().getName() + ": Landing request from Plane-" + planeId + " Recieved. Standby for turn(Land Order: " + queueSize + ")");
         }
@@ -109,7 +108,7 @@ public class ATC implements Runnable {
      if (queueSize == 0) {
          return;
      }
-     int nextPlane = landingQueue[queueFront];
+     int nextPlane = landingOrder[NextLand];
      boolean isEmergency = (nextPlane == 5);
 
      //check availble
@@ -127,7 +126,7 @@ public class ATC implements Runnable {
              }
 
              // Rem from queue
-             queueFront = (queueFront + 1) % TOTAL_PLANES;
+             NextLand = (NextLand + 1) % TotPlanes;
              queueSize--;
 
              printQueueStatus();
@@ -150,8 +149,8 @@ public class ATC implements Runnable {
         
         System.out.print(Thread.currentThread().getName() + ": Landing queue: [");
         for (int i = 0; i < queueSize; i++) {
-            int index = (queueFront + i) % TOTAL_PLANES;
-            int planeId = landingQueue[index];
+            int index = (NextLand + i) % TotPlanes;
+            int planeId = landingOrder[index];
             System.out.print("Plane-" + planeId);
             if (planeId == 5) {
                 System.out.print("(E)");

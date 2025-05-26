@@ -10,8 +10,6 @@ public class Planes implements Runnable {
     private final Airport airport;
     private final ATC atc;
     private int assignedGate = -1;
-    
-    // Time + stat
     private long waitStartTime = 0;
     private long totalWaitingTime = 0;
     
@@ -69,7 +67,7 @@ public class Planes implements Runnable {
             System.out.println(Thread.currentThread().getName() + ": Received landing clearance - Landing on runway.");
             Thread.sleep(1000); 
     
-            //Find assigned gate
+            //get alrdy gate
             assignedGate = airport.findGateForPlane(id);
            
             //if (assignedGate == -1) {
@@ -78,7 +76,7 @@ public class Planes implements Runnable {
             //}
 
          
-            // Taxi to gate
+            //taxi
             System.out.println(Thread.currentThread().getName() + ": Landed. Moving to Gate-" + assignedGate + ".");
             if(id == 2){
                 Thread.sleep(4000); 
@@ -102,7 +100,7 @@ public class Planes implements Runnable {
                     Thread.sleep(3000);
                 }
             }
-            //Depart
+            //Leave
             System.out.println(Thread.currentThread().getName() + ": Departing from Gate-" + assignedGate + ". Heading to Runway.");
             Thread.sleep(2000);
 
@@ -154,7 +152,7 @@ public class Planes implements Runnable {
             PassengerBoardingThread.join(); 
         } catch (InterruptedException e) {}
         
-        // Update stats
+        // Update
         airport.updatePassengerCount(passengers);
         
         // Wait for refueling to complete

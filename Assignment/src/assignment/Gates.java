@@ -33,7 +33,6 @@ public class Gates {
         this.occupiedBy = 0;
     }
     
-    //Plane in Gate
     public synchronized int getOccupiedBy() {
         return occupiedBy;
     }

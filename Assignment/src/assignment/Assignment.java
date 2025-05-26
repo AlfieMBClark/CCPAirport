@@ -2,18 +2,18 @@ package assignment;
 import java.util.Random;
 
 public class Assignment {
-    public static int TOTAL_PLANES = 6;
+    public static int TotPlanes = 6;
     
     public static void main(String[] args) {
-        System.out.println("\tAsia Pacific Airport Simulation Started");
-        System.out.println("\tTotal planes: " + TOTAL_PLANES);
+        System.out.println("\tAsia Pacific Airport");
+        //System.out.println("\tTotal planes: " + TotPlanes);
         Airport airport = new Airport();
         Random random = new Random();
 
-        Thread[] planeThreads = new Thread[TOTAL_PLANES];
+        Thread[] planeThreads = new Thread[TotPlanes];
         
       
-        for(int i = 0; i < TOTAL_PLANES; i++) {
+        for(int i = 0; i < TotPlanes; i++) {
             int planeId = i + 1;
             boolean isEmergency = (planeId == 5);
             
@@ -37,15 +37,14 @@ public class Assignment {
         }
         
         // complete planes
-        for (int i = 0; i < TOTAL_PLANES; i++) {
+        for (int i = 0; i < TotPlanes; i++) {
             try {
                 planeThreads[i].join();
                 System.out.println("\t" + planeThreads[i].getName() + " completed");
             } catch (InterruptedException e) {}
         }
         
-        System.out.println("\n\tAll planes have completed");
-        
+        System.out.println("\n\tAll planes have left :^)");
         airport.printStatistics();
     }
 }
