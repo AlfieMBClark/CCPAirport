@@ -42,7 +42,9 @@ public class RefuelTruck implements Runnable {
     }
     
     private static synchronized void moveToNextPlane() {
-        currentServing++;
+        if(currentServing < NumInQueue){
+            currentServing++;
+        }
         System.out.println("\t" + Thread.currentThread().getName() +": Available");
     }
     

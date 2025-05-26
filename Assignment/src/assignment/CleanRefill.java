@@ -9,14 +9,16 @@ public class CleanRefill implements Runnable {
     
     @Override
     public void run() {
-        try {
-            performCleaningAndRefill();
-        } catch (InterruptedException e) {}
+        performCleaningAndRefill(); 
     }
     
-    private void performCleaningAndRefill() throws InterruptedException {
+    private void performCleaningAndRefill(){
         System.out.println("\t\t" + Thread.currentThread().getName() + ": Starting cleaning and supplies refill for Plane-" + planeId + ".");
-        Thread.sleep(4000);
+        
+        try{
+            Thread.sleep(4000);
+        }catch (InterruptedException e) {}
+       
         System.out.println("\t\t" + Thread.currentThread().getName() + ": Cleaning and supplies refill completed for Plane-" + planeId + ".");
     }
 }

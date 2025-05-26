@@ -40,7 +40,6 @@ public class Assignment {
         for (int i = 0; i < TotPlanes; i++) {
             try {
                 planeThreads[i].join();
-                System.out.println("\t" + planeThreads[i].getName() + " completed");
             } catch (InterruptedException e) {}
         }
         

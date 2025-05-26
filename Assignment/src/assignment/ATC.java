@@ -79,6 +79,7 @@ public class ATC implements Runnable {
             airport.clearRunway();
             airport.decrementPlanesOnGround();
             airport.incrementPlanesServed();
+            System.out.println("Plane-"+planeId+" Completed");
         }else if ("gateComplete".equals(request)) {
             System.out.println(Thread.currentThread().getName() + ": Gate-" + gate + " Is Free!");
             airport.releaseGate(gate);
@@ -169,7 +170,7 @@ public class ATC implements Runnable {
     
     
     // Req to ATC thread
-    private void sendToATC(String requestType, int id, boolean isEmergency, int gateNumber) {
+    private synchronized void sendToATC(String requestType, int id, boolean isEmergency, int gateNumber) {
         request = requestType;
         planeId = id;
         emergency = isEmergency;

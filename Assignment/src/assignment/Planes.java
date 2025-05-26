@@ -110,6 +110,7 @@ public class Planes implements Runnable {
             Thread.sleep(2000); 
             System.out.println(Thread.currentThread().getName() + ": Successfully taken off");
             atc.completeTakeoff(id);
+            Thread.sleep(100);
 
         } catch (InterruptedException e) {}
     }
